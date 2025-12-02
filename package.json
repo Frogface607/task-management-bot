@@ -1,0 +1,48 @@
+{
+  "name": "task-management-bot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "start": "node src/bot/index.js",
+    "dev": "nodemon src/bot/index.js",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.58.0",
+    "anthropic": "^0.0.0",
+    "chrono-node": "^2.9.0",
+    "dotenv": "^16.6.1",
+    "node-cron": "^3.0.3",
+    "openai": "^4.104.0",
+    "pino": "^9.12.0",
+    "pino-pretty": "^11.3.0",
+    "telegraf": "^4.16.3",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@jest/globals": "^30.2.0",
+    "@types/node": "^20.19.18",
+    "@typescript-eslint/eslint-plugin": "^8.45.0",
+    "@typescript-eslint/parser": "^8.45.0",
+    "eslint": "^9.36.0",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint-plugin-prettier": "^5.5.4",
+    "jest": "^30.2.0",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  }
+}

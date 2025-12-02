@@ -12,14 +12,14 @@ export function workspaceManagementKeyboard() {
   ]);
 }
 
-export function userManagementKeyboard(users, currentPage = 0, pageSize = 5) {
+export function userManagementKeyboard(users, roles, currentPage = 0, pageSize = 5) {
   const startIndex = currentPage * pageSize;
   const endIndex = startIndex + pageSize;
   const pageUsers = users.slice(startIndex, endIndex);
   
   const buttons = pageUsers.map(user => [
     Markup.button.callback(
-      `👤 ${user.username} (${user.total_xp || 0} XP)`, 
+      `👤 ${user.username || 'user'}`, 
       `user:manage:${user.id}`
     )
   ]);
@@ -38,8 +38,8 @@ export function userManagementKeyboard(users, currentPage = 0, pageSize = 5) {
   }
   
   buttons.push([
-    Markup.button.callback('🔄 Обновить', 'workspace:users'),
-    Markup.button.callback('🏠 Назад', 'workspace:management')
+    Markup.button.callback('🔄 Обновить', 'admin:manage_users'),
+    Markup.button.callback('« Назад', 'admin:menu')
   ]);
   
   return Markup.inlineKeyboard(buttons);

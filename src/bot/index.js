@@ -833,8 +833,10 @@ bot.action('admin:create_workspace', async (ctx) => {
 // Admin panel
 bot.command('admin', async (ctx) => {
   const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return;
-  await ctx.reply('Admin Panel', adminMenu());
+  if (String(ctx.from.username) !== String(adminId)) {
+    return ctx.reply('❌ У вас нет доступа к админ-панели.');
+  }
+  await ctx.reply('🏢 **Админ-панель**\n\nВыберите действие:', adminMenu());
 });
 
 // Manage users (list and assign roles)

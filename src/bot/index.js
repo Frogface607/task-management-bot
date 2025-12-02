@@ -1374,12 +1374,12 @@ async function handleTaskCreation(ctx, state) {
         // Parse natural language deadline
         const parsedDeadline = parseNaturalDate(text);
         if (!parsedDeadline) {
-          await ctx.reply('Не удалось распознать дату. Попробуйте еще раз или используйте формат "завтра в 15:00":', Markup.forceReply());
+          await ctx.reply('Не удалось распознать дату. Попробуйте еще раз или используйте формат "завтра в 15:00", или выберите из кнопок:', deadlineQuickKeyboard());
           return;
         }
         
         if (isDateInPast(parsedDeadline)) {
-          await ctx.reply('Дата не может быть в прошлом. Попробуйте другую дату:', Markup.forceReply());
+          await ctx.reply('Дата не может быть в прошлом. Попробуйте другую дату:', deadlineQuickKeyboard());
           return;
         }
         

@@ -49,6 +49,18 @@ const logger = pino(LOGGER_OPTIONS);
 
 const { TELEGRAM_BOT_TOKEN, ADMIN_TELEGRAM_ID } = process.env;
 
+// Admin check helper
+function isAdmin(ctx) {
+  if (!ADMIN_TELEGRAM_ID) return false;
+  const adminId = String(ADMIN_TELEGRAM_ID).trim();
+  const userId = String(ctx.from.id);
+  const username = String(ctx.from.username || '').toLowerCase();
+  const adminUsername = adminId.toLowerCase();
+  
+  // Check by ID (preferred) or username
+  return userId === adminId || username === adminUsername;
+}
+
 // Mobile detection helper
 function isMobileUser(ctx) {
   // Check if user agent contains mobile indicators
@@ -128,21 +140,18 @@ bot.start(async (ctx) => {
     }
 
     // Check if user is admin/manager to show extended menu
-    let isAdmin = false;
-    const adminUsername = process.env.ADMIN_TELEGRAM_ID;
-    if (adminUsername && String(ctx.from.username) === String(adminUsername)) {
-      isAdmin = true;
-    } else if (existingUser?.id) {
+    let isAdminUser = isAdmin(ctx);
+    if (!isAdminUser && existingUser?.id) {
       const { data: roleData } = await supabase
         .from('user_roles')
         .select('roles(name, access_level)')
         .eq('user_id', existingUser.id)
         .maybeSingle();
-      if (roleData?.roles?.access_level >= 60) isAdmin = true; // Manager or higher
+      if (roleData?.roles?.access_level >= 60) isAdminUser = true; // Manager or higher
     }
     
     // Show onboarding for new users (or admin testing)
-    if (isNewUser || (isAdmin && ctx.message?.text?.includes('onboarding'))) {
+    if (isNewUser || (isAdminUser && ctx.message?.text?.includes('onboarding'))) {
       const userData = {
         username: username,
         telegramId: telegramId,
@@ -186,8 +195,7 @@ bot.command('help', async (ctx) => {
 
 // Test onboarding command (for admin)
 bot.command('test_onboarding', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return;
+  if (!isAdmin(ctx)) return;
   
   try {
     const telegramId = String(ctx.from.id);
@@ -275,8 +283,7 @@ bot.command('profile', async (ctx) => {
 
 // Admin: /add_checklist
 bot.command('add_checklist', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return;
+  if (!isAdmin(ctx)) return;
   ctx.session = ctx.session || {};
   ctx.session.expecting = 'checklist_name';
   await ctx.reply('Название чек-листа?');
@@ -366,8 +373,7 @@ bot.hears('👤 Профиль', async (ctx) => {
 
 // Admin button: Создать задачу
 bot.hears('📝 Создать задачу', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return;
+  if (!isAdmin(ctx)) return;
   
   const userId = ctx.from.id;
   userStates.set(userId, {
@@ -382,8 +388,7 @@ bot.hears('📝 Создать задачу', async (ctx) => {
 
 // Admin button: Мои задачи
 bot.hears('📊 Мои задачи', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return;
+  if (!isAdmin(ctx)) return;
   
   try {
     const { data: me } = await supabase
@@ -409,8 +414,7 @@ bot.hears('📊 Мои задачи', async (ctx) => {
 
 // Admin button: Статистика
 bot.hears('📈 Статистика', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return;
+  if (!isAdmin(ctx)) return;
   
   try {
     const { data: me } = await supabase
@@ -476,8 +480,7 @@ ${overdueTasks > 0 ? `⚠️ Внимание: ${overdueTasks} задач про
 
 // Admin button: Тест онбординга
 bot.hears('🧪 Тест онбординга', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return;
+  if (!isAdmin(ctx)) return;
   
   try {
     const telegramId = String(ctx.from.id);
@@ -508,8 +511,7 @@ bot.hears('🧪 Тест онбординга', async (ctx) => {
 
 // Workspace management command
 bot.command('workspace', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return;
+  if (!isAdmin(ctx)) return;
   
   try {
     const { data: me } = await supabase
@@ -531,8 +533,7 @@ bot.command('workspace', async (ctx) => {
 
 // Admin button: Добавить чек-лист
 bot.hears('📋 Добавить чек-лист', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return;
+  if (!isAdmin(ctx)) return;
   ctx.session = ctx.session || {};
   ctx.session.expecting = 'checklist_name';
   await ctx.reply('Название чек-листа?');
@@ -540,8 +541,7 @@ bot.hears('📋 Добавить чек-лист', async (ctx) => {
 
 // Admin button: Управление
 bot.hears('👥 Управление', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return;
+  if (!isAdmin(ctx)) return;
   try {
     const { data: me } = await supabase
       .from('users')
@@ -564,8 +564,7 @@ bot.hears('👥 Управление', async (ctx) => {
 
 // Admin button: Проблемы
 bot.hears('🚨 Проблемы', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return;
+  if (!isAdmin(ctx)) return;
   try {
     const { data: me } = await supabase.from('users').select('workspace_id').eq('telegram_id', String(ctx.from.id)).maybeSingle();
     if (!me?.workspace_id) return ctx.reply('Сначала присоединитесь к рабочему пространству.');
@@ -680,8 +679,7 @@ bot.action(/task:issue:(?<taskId>[^:]+)/, async (ctx) => {
 
 // Admin approves task
 bot.action(/task:approve:(?<taskId>[^:]+)/, async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return ctx.answerCbQuery('Недостаточно прав');
+  if (!isAdmin(ctx)) return ctx.answerCbQuery('Недостаточно прав');
   try {
     const { taskId } = ctx.match.groups;
     await markTaskApproved(taskId);
@@ -716,8 +714,7 @@ bot.action(/task:approve:(?<taskId>[^:]+)/, async (ctx) => {
 
 // Admin rejects task
 bot.action(/task:reject:(?<taskId>[^:]+)/, async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return ctx.answerCbQuery('Недостаточно прав');
+  if (!isAdmin(ctx)) return ctx.answerCbQuery('Недостаточно прав');
   try {
     const { taskId } = ctx.match.groups;
     await markTaskRejected(taskId);
@@ -752,8 +749,7 @@ bot.action(/task:reject:(?<taskId>[^:]+)/, async (ctx) => {
 
 // Admin: /create_workspace
 bot.command('create_workspace', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return;
+  if (!isAdmin(ctx)) return;
   await ctx.reply('Reply to this message with your workspace name:', Markup.forceReply());
   console.log('[create_workspace] Prompted for workspace name by', ctx.from.username || ctx.from.id);
 });
@@ -819,8 +815,7 @@ bot.hears('🏢 Присоединиться к workspace', async (ctx) => {
 
 // Admin: Create workspace button
 bot.action('admin:create_workspace', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return ctx.answerCbQuery('Недостаточно прав');
+  if (!isAdmin(ctx)) return ctx.answerCbQuery('Недостаточно прав');
   
   await ctx.editMessageText('Введите название рабочего пространства:', Markup.forceReply());
   const userId = ctx.from.id;
@@ -832,8 +827,7 @@ bot.action('admin:create_workspace', async (ctx) => {
 
 // Admin panel
 bot.command('admin', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) {
+  if (!isAdmin(ctx)) {
     return ctx.reply('❌ У вас нет доступа к админ-панели.');
   }
   await ctx.reply('🏢 **Админ-панель**\n\nВыберите действие:', adminMenu());
@@ -841,8 +835,7 @@ bot.command('admin', async (ctx) => {
 
 // Manage users (list and assign roles)
 bot.command('manage_users', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return;
+  if (!isAdmin(ctx)) return;
   try {
     // Find admin user workspace
     const { data: me, error } = supabase
@@ -867,8 +860,7 @@ bot.command('manage_users', async (ctx) => {
 
 bot.action(/role:set:(?<userId>[^:]+):(?<roleId>\d+)/, async (ctx) => {
   try {
-    const adminId = process.env.ADMIN_TELEGRAM_ID;
-    if (String(ctx.from.username) !== String(adminId)) return ctx.answerCbQuery('Not allowed');
+    if (!isAdmin(ctx)) return ctx.answerCbQuery('Not allowed');
     const { userId, roleId } = ctx.match.groups;
     await assignUserRole(userId, Number(roleId));
     await ctx.answerCbQuery('Role assigned');
@@ -1032,8 +1024,7 @@ bot.action(/task:remind:(?<taskId>[^:]+)/, async (ctx) => {
 bot.action(/tasks:filter:(?<filter>[^:]+)/, async (ctx) => {
   try {
     const { filter } = ctx.match.groups;
-    const adminId = process.env.ADMIN_TELEGRAM_ID;
-    if (String(ctx.from.username) !== String(adminId)) return ctx.answerCbQuery('Недостаточно прав');
+    if (!isAdmin(ctx)) return ctx.answerCbQuery('Недостаточно прав');
     
     const { data: me } = await supabase
       .from('users')
@@ -1060,8 +1051,7 @@ bot.action(/tasks:filter:(?<filter>[^:]+)/, async (ctx) => {
 bot.action(/tasks:sort:(?<sort>[^:]+)/, async (ctx) => {
   try {
     const { sort } = ctx.match.groups;
-    const adminId = process.env.ADMIN_TELEGRAM_ID;
-    if (String(ctx.from.username) !== String(adminId)) return ctx.answerCbQuery('Недостаточно прав');
+    if (!isAdmin(ctx)) return ctx.answerCbQuery('Недостаточно прав');
     
     const { data: me } = await supabase
       .from('users')
@@ -1100,8 +1090,7 @@ bot.action(/tasks:sort:(?<sort>[^:]+)/, async (ctx) => {
 
 bot.action('tasks:list', async (ctx) => {
   try {
-    const adminId = process.env.ADMIN_TELEGRAM_ID;
-    if (String(ctx.from.username) !== String(adminId)) return ctx.answerCbQuery('Недостаточно прав');
+    if (!isAdmin(ctx)) return ctx.answerCbQuery('Недостаточно прав');
     
     const { data: me } = await supabase
       .from('users')
@@ -1134,8 +1123,7 @@ bot.action('tasks:archive', async (ctx) => {
 });
 
 bot.action('admin:create_task', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return ctx.answerCbQuery('Недостаточно прав');
+  if (!isAdmin(ctx)) return ctx.answerCbQuery('Недостаточно прав');
   
   const userId = ctx.from.id;
   userStates.set(userId, {
@@ -1149,16 +1137,14 @@ bot.action('admin:create_task', async (ctx) => {
 });
 
 bot.action('admin:menu', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return ctx.answerCbQuery('Недостаточно прав');
+  if (!isAdmin(ctx)) return ctx.answerCbQuery('Недостаточно прав');
   
   await ctx.editMessageText('🏢 **Админ-панель**\n\nВыберите действие:', adminMenu());
 });
 
 // Admin: Statistics
 bot.action('admin:stats', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return ctx.answerCbQuery('Недостаточно прав');
+  if (!isAdmin(ctx)) return ctx.answerCbQuery('Недостаточно прав');
   
   try {
     const { data: me } = await supabase
@@ -1186,8 +1172,7 @@ bot.action('admin:stats', async (ctx) => {
 
 // Admin: Issues
 bot.action('admin:issues', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return ctx.answerCbQuery('Недостаточно прав');
+  if (!isAdmin(ctx)) return ctx.answerCbQuery('Недостаточно прав');
   
   try {
     const { data: me } = await supabase
@@ -1231,8 +1216,7 @@ bot.action('admin:issues', async (ctx) => {
 
 // Admin: Manage users
 bot.action('admin:manage_users', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return ctx.answerCbQuery('Недостаточно прав');
+  if (!isAdmin(ctx)) return ctx.answerCbQuery('Недостаточно прав');
   
   try {
     const { data: me } = await supabase
@@ -1272,8 +1256,7 @@ bot.action('admin:manage_users', async (ctx) => {
 });
 
 bot.action('admin:my_tasks', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return ctx.answerCbQuery('Недостаточно прав');
+  if (!isAdmin(ctx)) return ctx.answerCbQuery('Недостаточно прав');
   
   try {
     const { data: me } = await supabase
@@ -1305,7 +1288,7 @@ bot.action('main_menu', async (ctx) => {
     
     await ctx.editMessageText(
       'Добро пожаловать в систему управления задачами!\n\nИспользуйте меню для управления задачами и другими функциями.',
-      isAdmin ? adminMainMenu() : mainMenu()
+      isAdminUser ? adminMainMenu() : mainMenu()
     );
   } catch (e) {
     logger.error({ e }, 'main_menu action failed');
@@ -1424,8 +1407,7 @@ bot.on('text', async (ctx, next) => {
 
 // Admin: /my_quests - show all assigned quests
 bot.command('my_quests', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return;
+  if (!isAdmin(ctx)) return;
   
   try {
     const { data: me } = await supabase
@@ -1451,8 +1433,7 @@ bot.command('my_quests', async (ctx) => {
 
 // Admin: /create_quest (personal) - using userStates Map
 bot.command('create_quest', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return;
+  if (!isAdmin(ctx)) return;
   
   const userId = ctx.from.id;
   userStates.set(userId, {
@@ -1840,8 +1821,7 @@ async function finalizeIssue(ctx) {
 
 // Admin: /issues
 bot.command('issues', async (ctx) => {
-  const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return;
+  if (!isAdmin(ctx)) return;
   try {
     const { data: me } = await supabase.from('users').select('workspace_id').eq('telegram_id', String(ctx.from.id)).maybeSingle();
     if (!me?.workspace_id) return ctx.reply('Join a workspace first.');

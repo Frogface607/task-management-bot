@@ -1191,6 +1191,36 @@ bot.action('admin:issues', async (ctx) => {
   }
 });
 
+// Admin: Invite user
+bot.action('admin:invite_user', async (ctx) => {
+  if (!isAdmin(ctx)) return ctx.answerCbQuery('Недостаточно прав');
+  
+  try {
+    const { data: me } = await supabase
+      .from('users')
+      .select('workspace_id')
+      .eq('telegram_id', String(ctx.from.id))
+      .maybeSingle();
+    
+    if (!me?.workspace_id) {
+      return ctx.answerCbQuery('Сначала присоединитесь к рабочему пространству.');
+    }
+    
+    const workspace = await getWorkspaceInfo(me.workspace_id);
+    const inviteInfo = await generateInviteLink(me.workspace_id);
+    
+    await ctx.editMessageText(
+      `🔗 **Пригласить пользователя**\n\n${formatInviteInfo(inviteInfo)}`,
+      Markup.inlineKeyboard([
+        [Markup.button.callback('« Назад', 'admin:menu')]
+      ])
+    );
+  } catch (e) {
+    logger.error({ e }, 'admin invite user failed');
+    await ctx.answerCbQuery('Не удалось получить ссылку');
+  }
+});
+
 // Admin: Manage users
 bot.action('admin:manage_users', async (ctx) => {
   if (!isAdmin(ctx)) return ctx.answerCbQuery('Недостаточно прав');

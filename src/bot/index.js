@@ -1148,6 +1148,129 @@ bot.action('admin:create_task', async (ctx) => {
   await ctx.editMessageText('Название задачи?', Markup.forceReply());
 });
 
+bot.action('admin:menu', async (ctx) => {
+  const adminId = process.env.ADMIN_TELEGRAM_ID;
+  if (String(ctx.from.username) !== String(adminId)) return ctx.answerCbQuery('Недостаточно прав');
+  
+  await ctx.editMessageText('🏢 **Админ-панель**\n\nВыберите действие:', adminMenu());
+});
+
+// Admin: Statistics
+bot.action('admin:stats', async (ctx) => {
+  const adminId = process.env.ADMIN_TELEGRAM_ID;
+  if (String(ctx.from.username) !== String(adminId)) return ctx.answerCbQuery('Недостаточно прав');
+  
+  try {
+    const { data: me } = await supabase
+      .from('users')
+      .select('workspace_id')
+      .eq('telegram_id', String(ctx.from.id))
+      .maybeSingle();
+    
+    if (!me?.workspace_id) {
+      return ctx.answerCbQuery('Сначала присоединитесь к рабочему пространству.');
+    }
+    
+    const workspace = await getWorkspaceInfo(me.workspace_id);
+    const stats = await getWorkspaceStats(me.workspace_id);
+    const statsText = formatWorkspaceInfo(workspace, stats);
+    
+    await ctx.editMessageText(statsText, Markup.inlineKeyboard([
+      [Markup.button.callback('« Назад', 'admin:menu')]
+    ]));
+  } catch (e) {
+    logger.error({ e }, 'admin stats failed');
+    await ctx.answerCbQuery('Не удалось загрузить статистику');
+  }
+});
+
+// Admin: Issues
+bot.action('admin:issues', async (ctx) => {
+  const adminId = process.env.ADMIN_TELEGRAM_ID;
+  if (String(ctx.from.username) !== String(adminId)) return ctx.answerCbQuery('Недостаточно прав');
+  
+  try {
+    const { data: me } = await supabase
+      .from('users')
+      .select('workspace_id')
+      .eq('telegram_id', String(ctx.from.id))
+      .maybeSingle();
+    
+    if (!me?.workspace_id) {
+      return ctx.answerCbQuery('Сначала присоединитесь к рабочему пространству.');
+    }
+    
+    const issues = await listIssues(me.workspace_id);
+    
+    if (issues.length === 0) {
+      await ctx.editMessageText('🚨 **Проблемы**\n\nНет активных проблем.', Markup.inlineKeyboard([
+        [Markup.button.callback('« Назад', 'admin:menu')]
+      ]));
+      return;
+    }
+    
+    let issuesText = '🚨 **Проблемы**\n\n';
+    issues.forEach((issue, index) => {
+      const statusEmoji = issue.status === 'resolved' ? '✅' : issue.status === 'in_progress' ? '🟡' : '🔴';
+      issuesText += `${statusEmoji} **${issue.category}**\n`;
+      issuesText += `Статус: ${issue.status}\n`;
+      if (issue.description) {
+        issuesText += `Описание: ${issue.description.substring(0, 100)}${issue.description.length > 100 ? '...' : ''}\n`;
+      }
+      issuesText += `\n`;
+    });
+    
+    await ctx.editMessageText(issuesText, Markup.inlineKeyboard([
+      [Markup.button.callback('« Назад', 'admin:menu')]
+    ]));
+  } catch (e) {
+    logger.error({ e }, 'admin issues failed');
+    await ctx.answerCbQuery('Не удалось загрузить проблемы');
+  }
+});
+
+// Admin: Manage users
+bot.action('admin:manage_users', async (ctx) => {
+  const adminId = process.env.ADMIN_TELEGRAM_ID;
+  if (String(ctx.from.username) !== String(adminId)) return ctx.answerCbQuery('Недостаточно прав');
+  
+  try {
+    const { data: me } = await supabase
+      .from('users')
+      .select('workspace_id')
+      .eq('telegram_id', String(ctx.from.id))
+      .maybeSingle();
+    
+    if (!me?.workspace_id) {
+      return ctx.answerCbQuery('Сначала присоединитесь к рабочему пространству.');
+    }
+    
+    const users = await getWorkspaceUsers(me.workspace_id);
+    const roles = await getWorkspaceRoles(me.workspace_id);
+    
+    if (users.length === 0) {
+      await ctx.editMessageText('👥 **Управление пользователями**\n\nВ workspace пока нет пользователей.', Markup.inlineKeyboard([
+        [Markup.button.callback('« Назад', 'admin:menu')]
+      ]));
+      return;
+    }
+    
+    let usersText = `👥 **Управление пользователями**\n\nВсего пользователей: ${users.length}\n\n`;
+    
+    users.forEach((user, index) => {
+      const userRoles = user.user_roles?.map(ur => ur.roles?.name).filter(Boolean).join(', ') || 'Без роли';
+      usersText += `${index + 1}. @${user.username || 'user'}\n`;
+      usersText += `   Роль: ${userRoles}\n`;
+      usersText += `   ID: ${user.telegram_id}\n\n`;
+    });
+    
+    await ctx.editMessageText(usersText, userManagementKeyboard(users, roles));
+  } catch (e) {
+    logger.error({ e }, 'admin manage users failed');
+    await ctx.answerCbQuery('Не удалось загрузить пользователей');
+  }
+});
+
 bot.action('admin:my_tasks', async (ctx) => {
   const adminId = process.env.ADMIN_TELEGRAM_ID;
   if (String(ctx.from.username) !== String(adminId)) return ctx.answerCbQuery('Недостаточно прав');

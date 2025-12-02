@@ -4,7 +4,7 @@ create table if not exists workspaces (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   invite_code text unique not null,
-  timezone text not null default 'Europe/Moscow',
+  timezone text not null default 'Asia/Irkutsk',
   created_at timestamptz not null default now()
 );
 

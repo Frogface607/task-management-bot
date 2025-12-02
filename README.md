@@ -39,7 +39,7 @@ TELEGRAM_BOT_TOKEN=
 SUPABASE_URL=
 SUPABASE_ANON_KEY=
 ADMIN_TELEGRAM_ID=
-TIMEZONE=Europe/Moscow
+TIMEZONE=Asia/Irkutsk
 ```
 
 ## Setup
@@ -85,5 +85,5 @@ TELEGRAM_BOT_TOKEN=ваш_токен_бота
 SUPABASE_URL=https://ваш-проект.supabase.co
 SUPABASE_ANON_KEY=ваш_ключ
 ADMIN_TELEGRAM_ID=ваш_telegram_username
-TIMEZONE=Europe/Moscow
+TIMEZONE=Asia/Irkutsk
 ```

@@ -28,7 +28,7 @@
 ```
 TELEGRAM_BOT_TOKEN=8219582907:AAHDnQkkovHsm9d7WkmxKrfXChTOg3fHDBs
 ADMIN_TELEGRAM_ID=ваш_telegram_username
-TIMEZONE=Europe/Moscow
+TIMEZONE=Asia/Irkutsk
 NODE_ENV=production
 ```
 

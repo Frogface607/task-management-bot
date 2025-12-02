@@ -1,5 +1,5 @@
 // Константы и конфигурация
-export const DEFAULT_TIMEZONE = process.env.TIMEZONE || "Europe/Moscow";
+export const DEFAULT_TIMEZONE = process.env.TIMEZONE || "Asia/Irkutsk";
 
 export const ROLE_NAMES = {
   OWNER: "Владелец",

@@ -7,7 +7,7 @@ function generateInviteCode() {
   return code;
 }
 
-export async function createWorkspace(name, timezone = 'Europe/Moscow') {
+export async function createWorkspace(name, timezone = 'Asia/Irkutsk') {
   const supabase = getClient();
   let inviteCode = generateInviteCode();
   // Ensure unique invite code

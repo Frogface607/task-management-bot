@@ -49,7 +49,7 @@ TELEGRAM_BOT_TOKEN=8219582907:AAHDnQkkovHsm9d7WkmxKrfXChTOg3fHDBs
 SUPABASE_URL=https://ваш-проект.supabase.co
 SUPABASE_ANON_KEY=ваш-ключ-из-supabase
 ADMIN_TELEGRAM_ID=ваш_telegram_username
-TIMEZONE=Europe/Moscow
+TIMEZONE=Asia/Irkutsk
 NODE_ENV=production
 ```
 

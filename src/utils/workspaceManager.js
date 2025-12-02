@@ -47,12 +47,14 @@ export async function getWorkspaceStats(workspaceId) {
 }
 
 export async function generateInviteLink(workspaceId) {
-  const { data: workspace } = await supabase
+  const supabase = getClient();
+  const { data: workspace, error } = await supabase
     .from('workspaces')
     .select('invite_code, name')
     .eq('id', workspaceId)
     .single();
   
+  if (error) throw error;
   if (!workspace) throw new Error('Workspace not found');
   
   const inviteLink = `t.me/isib_manager_bot?start=invite_${workspace.invite_code}`;

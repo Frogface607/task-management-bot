@@ -56,6 +56,17 @@ create table if not exists issues (
 create index if not exists idx_issues_reported_by on issues(reported_by);
 create index if not exists idx_issues_workspace on issues(workspace_id);
 
+create table if not exists task_templates (
+  id uuid primary key default gen_random_uuid(),
+  workspace_id uuid references workspaces(id) on delete cascade,
+  name text not null,
+  title text not null,
+  description text,
+  default_deadline_hours integer not null default 24,
+  created_at timestamptz not null default now()
+);
+create index if not exists idx_task_templates_workspace on task_templates(workspace_id);
+
 -- Insert default roles
 insert into roles (name, access_level) values
   ('Владелец', 100),

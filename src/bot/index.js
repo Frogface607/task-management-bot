@@ -42,6 +42,8 @@ import {
   roleSelectionKeyboard,
   workspaceSettingsKeyboard
 } from './keyboards/workspaceManagement.js';
+import { taskTemplatesListKeyboard, taskTemplateDeleteKeyboard } from './keyboards/taskTemplates.js';
+import { createTaskTemplate, getTaskTemplates, deleteTaskTemplate, getTaskTemplate } from '../database/queries/taskTemplates.js';
 
 const logger = pino(LOGGER_OPTIONS);
 
@@ -794,14 +796,38 @@ bot.action(/ws:join:(?<code>[A-Z0-9]{6})/, async (ctx) => {
   try {
     const code = ctx.match.groups.code;
     const ws = await getByInviteCode(code);
-    if (!ws) return ctx.answerCbQuery('Invite invalid');
+    if (!ws) return ctx.answerCbQuery('Ссылка недействительна');
     const userId = await upsertUserByTelegram(ctx.from.id, ctx.from.username || ctx.from.first_name || 'Unknown');
     await setUserWorkspace(userId, ws.id);
-    await ctx.editMessageText(`Joined workspace: ${ws.name}`);
+    await ctx.editMessageText(`✅ Присоединились к рабочему пространству: ${ws.name}`);
+    await ctx.reply('Теперь вы можете видеть и выполнять задачи!', mainMenu());
   } catch (e) {
     logger.error({ e }, 'join workspace failed');
-    await ctx.answerCbQuery('Join failed');
+    await ctx.answerCbQuery('Не удалось присоединиться');
   }
+});
+
+// Join workspace button handler
+bot.hears('🏢 Присоединиться к workspace', async (ctx) => {
+  await ctx.reply('Введите invite-код рабочего пространства (6 символов):', Markup.forceReply());
+  const userId = ctx.from.id;
+  userStates.set(userId, {
+    action: 'joining_workspace',
+    step: 'code'
+  });
+});
+
+// Admin: Create workspace button
+bot.action('admin:create_workspace', async (ctx) => {
+  const adminId = process.env.ADMIN_TELEGRAM_ID;
+  if (String(ctx.from.username) !== String(adminId)) return ctx.answerCbQuery('Недостаточно прав');
+  
+  await ctx.editMessageText('Введите название рабочего пространства:', Markup.forceReply());
+  const userId = ctx.from.id;
+  userStates.set(userId, {
+    action: 'creating_workspace',
+    step: 'name'
+  });
 });
 
 // Admin panel
@@ -1341,7 +1367,7 @@ async function handleTaskCreation(ctx, state) {
         state.data.assignee = text.replace('@', '');
         state.step = 'deadline';
         userStates.set(userId, state);
-        await ctx.reply('Когда нужно сделать?', deadlineQuickKeyboard());
+        await ctx.reply('Когда нужно сделать?\n\nВыберите быстро или введите дату:', deadlineQuickKeyboard());
         break;
         
       case 'deadline':
@@ -1409,6 +1435,122 @@ bot.on('text', async (ctx, next) => {
   if (state?.action === 'creating_task') {
     console.log('[text handler] Routing to handleTaskCreation');
     return handleTaskCreation(ctx, state);
+  }
+  
+  if (state?.action === 'joining_workspace' && state.step === 'code') {
+    try {
+      const code = String(ctx.message.text || '').trim().toUpperCase();
+      if (code.length !== 6) {
+        return ctx.reply('Код должен содержать 6 символов. Попробуйте еще раз:', Markup.forceReply());
+      }
+      const ws = await getByInviteCode(code);
+      if (!ws) {
+        userStates.delete(userId);
+        return ctx.reply('Ссылка-приглашение недействительна. Проверьте код и попробуйте еще раз.');
+      }
+      const userId_db = await upsertUserByTelegram(ctx.from.id, ctx.from.username || ctx.from.first_name || 'Unknown');
+      await setUserWorkspace(userId_db, ws.id);
+      userStates.delete(userId);
+      await ctx.reply(`✅ Присоединились к рабочему пространству: ${ws.name}\n\nТеперь вы можете видеть и выполнять задачи!`, mainMenu());
+    } catch (e) {
+      logger.error({ e }, 'join workspace failed');
+      userStates.delete(userId);
+      await ctx.reply('Не удалось присоединиться к рабочему пространству.');
+    }
+    return;
+  }
+  
+  if (state?.action === 'creating_workspace' && state.step === 'name') {
+    try {
+      const name = String(ctx.message.text || '').trim().slice(0, 80);
+      if (!name) {
+        return ctx.reply('Название не может быть пустым. Попробуйте еще раз:', Markup.forceReply());
+      }
+      const ws = await createWorkspace(name);
+      const userId_db = await upsertUserByTelegram(ctx.from.id, ctx.from.username || ctx.from.first_name || 'Unknown');
+      await setUserWorkspace(userId_db, ws.id);
+      const roles = await listRoles();
+      const owner = roles.find((r) => r.name === 'Владелец' || r.name === 'Owner');
+      if (owner) {
+        await assignUserRole(userId_db, owner.id);
+      }
+      const inviteInfo = await generateInviteLink(ws.id);
+      userStates.delete(userId);
+      await ctx.reply(`✅ Рабочее пространство "${ws.name}" создано!\n\n${formatInviteInfo(inviteInfo)}`, adminMenu());
+    } catch (e) {
+      logger.error({ e }, 'create workspace failed');
+      userStates.delete(userId);
+      await ctx.reply('Не удалось создать рабочее пространство.');
+    }
+    return;
+  }
+  
+  if (state?.action === 'creating_template') {
+    try {
+      const { data: me } = await supabase
+        .from('users')
+        .select('workspace_id')
+        .eq('telegram_id', String(ctx.from.id))
+        .maybeSingle();
+      
+      if (!me?.workspace_id) {
+        userStates.delete(userId);
+        return ctx.reply('Сначала присоединитесь к рабочему пространству.');
+      }
+      
+      switch(state.step) {
+        case 'name':
+          state.data.name = String(ctx.message.text || '').trim();
+          state.step = 'title';
+          userStates.set(userId, state);
+          await ctx.reply('Введите название задачи (например: "Подать заявку на площадку"):', Markup.forceReply());
+          break;
+          
+        case 'title':
+          state.data.title = String(ctx.message.text || '').trim();
+          state.step = 'description';
+          userStates.set(userId, state);
+          await ctx.reply('Введите описание задачи:', Markup.forceReply());
+          break;
+          
+        case 'description':
+          state.data.description = String(ctx.message.text || '').trim();
+          state.step = 'deadline_hours';
+          userStates.set(userId, state);
+          await ctx.reply('Через сколько часов по умолчанию должен быть дедлайн? (например: 24 для "через сутки"):', Markup.forceReply());
+          break;
+          
+        case 'deadline_hours':
+          const hours = parseInt(String(ctx.message.text || '').trim(), 10);
+          if (isNaN(hours) || hours < 1) {
+            return ctx.reply('Введите число часов (минимум 1):', Markup.forceReply());
+          }
+          
+          const template = await createTaskTemplate(
+            me.workspace_id,
+            state.data.name,
+            state.data.title,
+            state.data.description,
+            hours
+          );
+          
+          userStates.delete(userId);
+          await ctx.reply(
+            `✅ Шаблон "${template.name}" создан!\n\n` +
+            `**Название задачи:** ${template.title}\n` +
+            `**Описание:** ${template.description}\n` +
+            `**Дедлайн по умолчанию:** через ${template.default_deadline_hours} часов\n\n` +
+            `Теперь вы можете использовать этот шаблон для быстрого создания задач.`,
+            adminMenu()
+          );
+          break;
+      }
+    } catch (e) {
+      logger.error({ e }, 'create template failed');
+      userStates.delete(userId);
+      await ctx.reply('Не удалось создать шаблон.');
+    }
+    return;
   }
   
   // PRIORITY 2: Continue to other text handlers

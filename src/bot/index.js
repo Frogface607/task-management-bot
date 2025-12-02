@@ -1572,21 +1572,37 @@ bot.on('text', async (ctx, next) => {
       if (!name) {
         return ctx.reply('Название не может быть пустым. Попробуйте еще раз:', Markup.forceReply());
       }
+      
+      logger.info({ userId, name }, 'Creating workspace');
       const ws = await createWorkspace(name);
+      logger.info({ workspaceId: ws.id }, 'Workspace created');
+      
       const userId_db = await upsertUserByTelegram(ctx.from.id, ctx.from.username || ctx.from.first_name || 'Unknown');
+      logger.info({ userId_db }, 'User upserted');
+      
       await setUserWorkspace(userId_db, ws.id);
+      logger.info('User workspace set');
+      
       const roles = await listRoles();
+      logger.info({ rolesCount: roles.length }, 'Roles fetched');
+      
       const owner = roles.find((r) => r.name === 'Владелец' || r.name === 'Owner');
       if (owner) {
         await assignUserRole(userId_db, owner.id);
+        logger.info({ roleId: owner.id }, 'Owner role assigned');
+      } else {
+        logger.warn('Owner role not found');
       }
+      
       const inviteInfo = await generateInviteLink(ws.id);
+      logger.info({ inviteInfo }, 'Invite link generated');
+      
       userStates.delete(userId);
       await ctx.reply(`✅ Рабочее пространство "${ws.name}" создано!\n\n${formatInviteInfo(inviteInfo)}`, adminMenu());
     } catch (e) {
-      logger.error({ e }, 'create workspace failed');
+      logger.error({ e, stack: e.stack, message: e.message }, 'create workspace failed');
       userStates.delete(userId);
-      await ctx.reply('Не удалось создать рабочее пространство.');
+      await ctx.reply(`❌ Не удалось создать рабочее пространство.\n\nОшибка: ${e.message || 'Неизвестная ошибка'}\n\nПроверьте логи для деталей.`);
     }
     return;
   }

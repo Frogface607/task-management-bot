@@ -1836,7 +1836,7 @@ bot.command('issues', async (ctx) => {
 
 bot.action(/issue:status:(?<id>[^:]+):(?<status>new|in_progress|resolved)/, async (ctx) => {
   const adminId = process.env.ADMIN_TELEGRAM_ID;
-  if (String(ctx.from.username) !== String(adminId)) return ctx.answerCbQuery('Not allowed');
+  if (!isAdmin(ctx)) return ctx.answerCbQuery('Not allowed');
   try {
     const { id, status } = ctx.match.groups;
     await setIssueStatus(id, status);

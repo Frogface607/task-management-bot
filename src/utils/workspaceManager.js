@@ -1,23 +1,10 @@
-// Workspace management utilities
 import { getClient } from '../database/supabase.js';
 
-const supabase = getClient();
-
 export async function getWorkspaceInfo(workspaceId) {
+  const supabase = getClient();
   const { data, error } = await supabase
     .from('workspaces')
-    .select(`
-      *,
-      users!inner(
-        id,
-        username,
-        telegram_id,
-        total_xp,
-        user_roles(
-          roles(name, access_level)
-        )
-      )
-    `)
+    .select('id, name, invite_code, timezone, created_at')
     .eq('id', workspaceId)
     .single();
   
@@ -26,42 +13,36 @@ export async function getWorkspaceInfo(workspaceId) {
 }
 
 export async function getWorkspaceStats(workspaceId) {
-  const { data: quests } = await supabase
-    .from('quests')
-    .select('status, xp_reward, created_at, assigned_to')
-    .eq('workspace_id', workspaceId)
-    .eq('type', 'personal');
+  const supabase = getClient();
+  const { data: tasks } = await supabase
+    .from('tasks')
+    .select('status, deadline, created_at, assigned_to')
+    .eq('workspace_id', workspaceId);
   
   const { data: users } = await supabase
     .from('users')
-    .select('id, username, total_xp')
+    .select('id, username')
     .eq('workspace_id', workspaceId);
   
-  const totalQuests = quests?.length || 0;
-  const completedQuests = quests?.filter(q => q.status === 'approved').length || 0;
-  const activeQuests = quests?.filter(q => ['assigned', 'in_progress'].includes(q.status)).length || 0;
-  const overdueQuests = quests?.filter(q => {
-    if (!q.deadline) return false;
-    const deadline = new Date(q.deadline);
+  const totalTasks = tasks?.length || 0;
+  const completedTasks = tasks?.filter(t => t.status === 'approved').length || 0;
+  const activeTasks = tasks?.filter(t => ['assigned', 'in_progress'].includes(t.status)).length || 0;
+  const overdueTasks = tasks?.filter(t => {
+    if (!t.deadline) return false;
+    const deadline = new Date(t.deadline);
     const now = new Date();
-    return deadline < now && ['assigned', 'in_progress'].includes(q.status);
+    return deadline < now && ['assigned', 'in_progress'].includes(t.status);
   }).length || 0;
   
-  const totalXp = quests?.reduce((sum, q) => sum + (q.xp_reward || 0), 0) || 0;
-  const completedXp = quests?.filter(q => q.status === 'approved').reduce((sum, q) => sum + (q.xp_reward || 0), 0) || 0;
   const totalUsers = users?.length || 0;
-  const totalUserXp = users?.reduce((sum, u) => sum + (u.total_xp || 0), 0) || 0;
   
   return {
-    totalQuests,
-    completedQuests,
-    activeQuests,
-    overdueQuests,
-    totalXp,
-    completedXp,
+    totalTasks,
+    completedTasks,
+    activeTasks,
+    overdueTasks,
     totalUsers,
-    totalUserXp,
-    completionRate: totalQuests > 0 ? Math.round((completedQuests / totalQuests) * 100) : 0
+    completionRate: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
   };
 }
 
@@ -74,18 +55,20 @@ export async function generateInviteLink(workspaceId) {
   
   if (!workspace) throw new Error('Workspace not found');
   
+  const inviteLink = `t.me/isib_manager_bot?start=invite_${workspace.invite_code}`;
+  
   return {
-    code: workspace.invite_code,
-    link: `https://t.me/${process.env.BOT_USERNAME || 'your_bot'}?start=invite_${workspace.invite_code}`,
-    name: workspace.name
+    inviteCode: workspace.invite_code,
+    inviteLink,
+    workspaceName: workspace.name
   };
 }
 
 export async function getWorkspaceRoles(workspaceId) {
+  const supabase = getClient();
   const { data, error } = await supabase
     .from('roles')
-    .select('*')
-    .eq('workspace_id', workspaceId)
+    .select('id, name, access_level')
     .order('access_level', { ascending: false });
   
   if (error) throw error;
@@ -93,46 +76,54 @@ export async function getWorkspaceRoles(workspaceId) {
 }
 
 export async function getWorkspaceUsers(workspaceId) {
+  const supabase = getClient();
   const { data, error } = await supabase
     .from('users')
     .select(`
       id,
       username,
       telegram_id,
-      total_xp,
+      created_at,
       user_roles(
-        roles(name, access_level)
+        roles(
+          id,
+          name,
+          access_level
+        )
       )
     `)
     .eq('workspace_id', workspaceId)
-    .order('total_xp', { ascending: false });
+    .order('created_at', { ascending: false });
   
   if (error) throw error;
   return data || [];
 }
 
 export async function updateUserRole(userId, roleId) {
-  const { error } = await supabase
-    .from('user_roles')
-    .upsert({
-      user_id: userId,
-      role_id: roleId
-    });
+  const supabase = getClient();
   
-  if (error) throw error;
-  return true;
+  // Remove existing roles
+  const { error: deleteError } = await supabase
+    .from('user_roles')
+    .delete()
+    .eq('user_id', userId);
+  
+  if (deleteError) throw deleteError;
+  
+  // Add new role
+  const { error: insertError } = await supabase
+    .from('user_roles')
+    .insert({ user_id: userId, role_id: roleId });
+  
+  if (insertError) throw insertError;
 }
 
-export async function createRole(workspaceId, name, accessLevel, description = '') {
+export async function createRole(name, accessLevel) {
+  const supabase = getClient();
   const { data, error } = await supabase
     .from('roles')
-    .insert({
-      workspace_id: workspaceId,
-      name,
-      access_level: accessLevel,
-      description
-    })
-    .select()
+    .insert({ name, access_level: accessLevel })
+    .select('id, name, access_level')
     .single();
   
   if (error) throw error;
@@ -140,50 +131,43 @@ export async function createRole(workspaceId, name, accessLevel, description = '
 }
 
 export async function deleteRole(roleId) {
+  const supabase = getClient();
   const { error } = await supabase
     .from('roles')
     .delete()
     .eq('id', roleId);
   
   if (error) throw error;
-  return true;
 }
 
 export function formatWorkspaceInfo(workspace, stats) {
-  return `🏢 **${workspace.name}**
+  return `🏢 **Информация о рабочем пространстве**
+
+📌 **Название:** ${workspace.name}
+🆔 **ID:** ${workspace.id.slice(0, 8)}...
+📅 **Создано:** ${new Date(workspace.created_at).toLocaleDateString('ru-RU')}
+⏰ **Часовой пояс:** ${workspace.timezone}
 
 📊 **Статистика:**
 • Пользователей: ${stats.totalUsers}
-• Квестов: ${stats.totalQuests} (${stats.completionRate}% выполнено)
-• Активных: ${stats.activeQuests}
-• Просроченных: ${stats.overdueQuests}
-
-💎 **XP:**
-• Всего выдано: ${stats.completedXp}
-• В процессе: ${stats.totalXp - stats.completedXp}
-• Средний XP пользователя: ${stats.totalUsers > 0 ? Math.round(stats.totalUserXp / stats.totalUsers) : 0}
-
-⏰ **Часовой пояс:** ${workspace.timezone}
-📅 **Создан:** ${new Date(workspace.created_at).toLocaleDateString('ru-RU')}`;
+• Задач: ${stats.totalTasks} (${stats.completionRate}% выполнено)
+• Активных: ${stats.activeTasks}
+• Просроченных: ${stats.overdueTasks}`;
 }
 
 export function formatInviteInfo(inviteInfo) {
-  return `🔗 **Приглашение в ${inviteInfo.name}**
+  return `🔗 **Пригласительная ссылка**
 
-**Код:** \`${inviteInfo.code}\`
+📌 **Рабочее пространство:** ${inviteInfo.workspaceName}
+🆔 **Код приглашения:** \`${inviteInfo.inviteCode}\`
 
-**Ссылка:**
-\`${inviteInfo.link}\`
+🔗 **Ссылка:**
+\`${inviteInfo.inviteLink}\`
 
-📋 **Как пригласить:**
-1. Отправь ссылку пользователю
-2. Или попроси его ввести команду:
-   \`/start ${inviteInfo.code}\`
+📋 **Как использовать:**
+1. Отправьте ссылку пользователю
+2. Пользователь нажмет на ссылку
+3. Бот автоматически добавит его в workspace
 
-⚠️ **Код действителен всегда** (пока не изменишь)`;
+💡 **Совет:** Ссылка действительна до тех пор, пока workspace существует.`;
 }
-
-
-
-
-

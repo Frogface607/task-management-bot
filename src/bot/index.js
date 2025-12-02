@@ -755,37 +755,7 @@ bot.command('create_workspace', async (ctx) => {
 });
 
 // Handle reply to workspace name prompt via force-reply
-bot.on('message', async (ctx, next) => {
-  const promptText = ctx.message?.reply_to_message?.text?.toLowerCase() || '';
-  if (promptText.includes('workspace name')) {
-    try {
-      const name = String(ctx.message.text || '').trim().slice(0, 80);
-      console.log('[create_workspace] Received name via reply:', name);
-      console.log('[create_workspace] Attempting DB insert');
-      const ws = await createWorkspace(name);
-      console.log('[create_workspace] Insert success:', ws);
-      const userId = await upsertUserByTelegram(ctx.from.id, ctx.from.username || ctx.from.first_name || 'Unknown');
-      await setUserWorkspace(userId, ws.id);
-      const roles = await listRoles();
-      const owner = roles.find((r) => r.name === 'Owner');
-      if (owner) {
-        await assignUserRole(userId, owner.id);
-        console.log('[create_workspace] Assigned Owner role to creator');
-      } else {
-        console.warn('[create_workspace] Owner role not found, skipping role assignment');
-      }
-      const inviteLink = `t.me/isib_manager_bot?start=invite_${ws.invite_code}`;
-      console.log('[create_workspace] Responding with invite link:', inviteLink);
-      await ctx.reply(`Created workspace “${ws.name}”. Invite: ${inviteLink}`);
-    } catch (e) {
-      console.error('[create_workspace] ERROR:', e);
-      logger.error({ e }, 'create_workspace failed');
-      await ctx.reply('Failed to create workspace.');
-    }
-    return; // do not pass to other handlers
-  }
-  return next();
-});
+// Old workspace creation handler removed - now using state-based handler
 
 // Join workspace via button
 bot.action(/ws:join:(?<code>[A-Z0-9]{6})/, async (ctx) => {
@@ -1544,6 +1514,50 @@ bot.on('text', async (ctx, next) => {
   // PRIORITY 1: Check if user is in a conversation state
   const userId = ctx.from.id;
   const state = userStates.get(userId);
+  
+  logger.debug({ userId, state: state?.action, step: state?.step, text: ctx.message.text?.substring(0, 50) }, 'Text handler');
+  
+  // PRIORITY 0: Creating workspace (highest priority)
+  if (state?.action === 'creating_workspace' && state.step === 'name') {
+    try {
+      const name = String(ctx.message.text || '').trim().slice(0, 80);
+      if (!name) {
+        return ctx.reply('Название не может быть пустым. Попробуйте еще раз:', Markup.forceReply());
+      }
+      
+      logger.info({ userId, name }, 'Creating workspace');
+      const ws = await createWorkspace(name);
+      logger.info({ workspaceId: ws.id }, 'Workspace created');
+      
+      const userId_db = await upsertUserByTelegram(ctx.from.id, ctx.from.username || ctx.from.first_name || 'Unknown');
+      logger.info({ userId_db }, 'User upserted');
+      
+      await setUserWorkspace(userId_db, ws.id);
+      logger.info('User workspace set');
+      
+      const roles = await listRoles();
+      logger.info({ rolesCount: roles.length }, 'Roles fetched');
+      
+      const owner = roles.find((r) => r.name === 'Владелец' || r.name === 'Owner');
+      if (owner) {
+        await assignUserRole(userId_db, owner.id);
+        logger.info({ roleId: owner.id }, 'Owner role assigned');
+      } else {
+        logger.warn('Owner role not found');
+      }
+      
+      const inviteInfo = await generateInviteLink(ws.id);
+      logger.info({ inviteInfo }, 'Invite link generated');
+      
+      userStates.delete(userId);
+      await ctx.reply(`✅ Рабочее пространство "${ws.name}" создано!\n\n${formatInviteInfo(inviteInfo)}`, adminMenu());
+    } catch (e) {
+      logger.error({ e, stack: e.stack, message: e.message }, 'create workspace failed');
+      userStates.delete(userId);
+      await ctx.reply(`❌ Не удалось создать рабочее пространство.\n\nОшибка: ${e.message || 'Неизвестная ошибка'}\n\nПроверьте логи для деталей.`);
+    }
+    return;
+  }
   
   if (state?.action === 'creating_task') {
     console.log('[text handler] Routing to handleTaskCreation');

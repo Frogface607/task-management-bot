@@ -7,6 +7,7 @@ export function adminMenu() {
     [Markup.button.callback('📊 Мои задачи', 'admin:my_tasks')],
     [Markup.button.callback('🏢 Панель управления', 'workspace:management')],
     [Markup.button.callback('➕ Создать workspace', 'admin:create_workspace')],
+    [Markup.button.callback('🔗 Пригласить пользователя', 'admin:invite_user')],
     [Markup.button.callback('👥 Управление пользователями', 'admin:manage_users')],
     [Markup.button.callback('🚨 Проблемы', 'admin:issues')],
     [Markup.button.callback('📈 Статистика', 'admin:stats')],

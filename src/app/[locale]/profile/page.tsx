@@ -116,6 +116,16 @@ export default function ProfilePage() {
         </div>
       </section>
 
+      {/* Shop CTA */}
+      <Link href="/shop" className="glass-card rounded-2xl p-4 mb-6 flex items-center gap-3 border border-accent-purple/20 hover:bg-bg-card-hover transition-all block">
+        <span className="text-2xl">🏪</span>
+        <div className="flex-1">
+          <p className="font-bold text-sm">Own a shop?</p>
+          <p className="text-text-muted text-xs">Add your shop to the WIZL map — $4.20/mo</p>
+        </div>
+        <span className="text-text-muted text-xs">→</span>
+      </Link>
+
       {/* Top Strains */}
       {topStrains.length > 0 && (
         <section className="mb-6">

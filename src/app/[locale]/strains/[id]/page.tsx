@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { strains, recentCheckins } from "@/data/strains";
+import { shops } from "@/data/shops";
 import CheckinCard from "@/components/CheckinCard";
 import { notFound } from "next/navigation";
 
@@ -25,6 +26,9 @@ export default async function StrainPage({
 
   const t = await getTranslations("strains");
   const strainCheckins = recentCheckins.filter((c) => c.strainId === id);
+  const availableAt = shops.filter((s) =>
+    s.topStrains.some((ts) => ts.toLowerCase() === strain.name.toLowerCase())
+  );
 
   return (
     <div className="max-w-lg mx-auto px-4 pb-24">
@@ -123,6 +127,29 @@ export default async function StrainPage({
           <p className="text-text-muted text-[10px]">{t("reviews")}</p>
         </div>
       </div>
+
+      {/* Available at shops */}
+      {availableAt.length > 0 && (
+        <section className="mb-6">
+          <h2 className="font-bold mb-3 text-sm uppercase tracking-wider text-text-muted">📍 Available at</h2>
+          <div className="flex flex-col gap-2">
+            {availableAt.map((s) => (
+              <Link key={s.id} href="/map"
+                className="glass-card rounded-xl p-3 flex items-center gap-3 hover:bg-bg-card-hover transition-all">
+                <span className="text-lg">🏪</span>
+                <div className="flex-1">
+                  <p className="font-semibold text-sm">{s.name}</p>
+                  <p className="text-text-muted text-xs">{s.district} • {s.hours}</p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-accent-green text-xs font-bold">{s.rating}</span>
+                  <span className="text-accent-green text-[10px]">★</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Reviews */}
       {strainCheckins.length > 0 && (

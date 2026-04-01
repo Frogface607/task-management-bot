@@ -16,18 +16,15 @@ export default function CheckinPage() {
     s.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleSubmit = () => {
-    setStep("done");
-  };
+  const handleSubmit = () => setStep("done");
 
   if (step === "done") {
     return (
       <div className="max-w-lg mx-auto px-4 pb-24 pt-8">
         <div className="text-center py-12">
-          <div className="text-7xl mb-4 animate-float">💨</div>
-          <h2 className="text-2xl font-black gradient-text mb-2">
-            Nice Puff!
-          </h2>
+          <div className="text-7xl mb-4 animate-float">🔍</div>
+          <h2 className="text-2xl font-black gradient-text mb-1">Logged!</h2>
+          <p className="text-sm gradient-love font-medium mb-3">with love</p>
           <p className="text-text-secondary mb-2">
             Check-in recorded for{" "}
             <span className="text-text-primary font-semibold">
@@ -36,13 +33,11 @@ export default function CheckinPage() {
           </p>
           <div className="flex justify-center gap-1 mb-6">
             {Array.from({ length: rating }).map((_, i) => (
-              <span key={i} className="text-2xl">
-                🌿
-              </span>
+              <span key={i} className="text-2xl">🌿</span>
             ))}
           </div>
 
-          {/* Share mock */}
+          {/* Share */}
           <div className="glass-card rounded-2xl p-5 mb-6 text-left">
             <p className="text-xs text-text-muted mb-2">Share your check-in</p>
             <div className="flex gap-3">
@@ -57,17 +52,17 @@ export default function CheckinPage() {
             </div>
           </div>
 
-          {/* Badges earned mock */}
+          {/* Badge */}
           <div className="glass-card rounded-2xl p-5 mb-6 glow-green">
             <p className="text-accent-green font-bold text-sm mb-2">
               🏆 Badge Unlocked!
             </p>
             <div className="flex items-center gap-3">
-              <span className="text-3xl">💨</span>
+              <span className="text-3xl">🔍</span>
               <div className="text-left">
-                <p className="font-semibold text-sm">First Puff</p>
+                <p className="font-semibold text-sm">First Scan</p>
                 <p className="text-text-muted text-xs">
-                  You made your first check-in!
+                  You made your first check-in on WIZL!
                 </p>
               </div>
             </div>
@@ -84,7 +79,7 @@ export default function CheckinPage() {
             }}
             className="px-6 py-3 rounded-2xl bg-accent-green text-black font-bold hover:brightness-110 transition-all"
           >
-            Another Puff? 💨
+            Scan another? 🔍
           </button>
         </div>
       </div>
@@ -137,7 +132,7 @@ export default function CheckinPage() {
 
         {/* Mood */}
         <div className="mb-6">
-          <h3 className="font-bold mb-3">How you feelin&apos;? 🧠</h3>
+          <h3 className="font-bold mb-3">How you feelin&apos;?</h3>
           <div className="grid grid-cols-5 gap-2">
             {moods.map((mood) => (
               <button
@@ -150,9 +145,7 @@ export default function CheckinPage() {
                 }`}
               >
                 <span className="text-xl">{mood.emoji}</span>
-                <span className="text-[10px] text-text-muted">
-                  {mood.label}
-                </span>
+                <span className="text-[10px] text-text-muted">{mood.label}</span>
               </button>
             ))}
           </div>
@@ -160,9 +153,9 @@ export default function CheckinPage() {
 
         {/* Review */}
         <div className="mb-6">
-          <h3 className="font-bold mb-3">Drop a review ✍️</h3>
+          <h3 className="font-bold mb-3">Drop a note ✍️</h3>
           <textarea
-            placeholder="Как тебе? Вкус, эффект, вайб..."
+            placeholder="Flavor, effect, vibe — whatever you feel..."
             value={review}
             onChange={(e) => setReview(e.target.value)}
             rows={3}
@@ -170,7 +163,7 @@ export default function CheckinPage() {
           />
         </div>
 
-        {/* Photo upload mock */}
+        {/* Photo upload */}
         <div className="mb-6">
           <h3 className="font-bold mb-3">
             Add a photo 📸{" "}
@@ -180,11 +173,9 @@ export default function CheckinPage() {
           </h3>
           <div className="glass-card rounded-2xl p-8 border-2 border-dashed border-border text-center">
             <div className="text-3xl mb-2">📷</div>
-            <p className="text-text-muted text-sm">
-              Tap to scan with AI Vision
-            </p>
+            <p className="text-text-muted text-sm">Tap to scan with AI Vision</p>
             <p className="text-text-muted text-xs mt-1">
-              Our AI will recognize the strain from the photo
+              WIZL will recognize the strain from the photo
             </p>
           </div>
         </div>
@@ -199,7 +190,7 @@ export default function CheckinPage() {
               : "bg-bg-card text-text-muted border border-border"
           }`}
         >
-          {rating > 0 ? "Check In 💨" : "Rate first to check in"}
+          {rating > 0 ? "Check In 🔍" : "Rate first to check in"}
         </button>
       </div>
     );
@@ -208,9 +199,9 @@ export default function CheckinPage() {
   // Step: Select Strain
   return (
     <div className="max-w-lg mx-auto px-4 pb-24 pt-6">
-      <h1 className="text-2xl font-black mb-2">💨 Check In</h1>
+      <h1 className="text-2xl font-black mb-1">🔍 What you got?</h1>
       <p className="text-text-secondary text-sm mb-6">
-        What are you smoking today?
+        Scan, search, or pick a strain to check in.
       </p>
 
       {/* Search */}
@@ -227,13 +218,13 @@ export default function CheckinPage() {
         </span>
       </div>
 
-      {/* Or scan */}
-      <div className="glass-card rounded-2xl p-4 mb-6 flex items-center gap-3">
+      {/* Scan CTA */}
+      <div className="glass-card rounded-2xl p-4 mb-6 flex items-center gap-3 glow-purple">
         <div className="text-2xl">📸</div>
         <div className="flex-1">
-          <p className="font-semibold text-sm">Scan with AI</p>
+          <p className="font-semibold text-sm">Scan with WIZL AI</p>
           <p className="text-text-muted text-xs">
-            Photo the jar and we&apos;ll do the rest
+            Photo the jar — we&apos;ll do the rest
           </p>
         </div>
         <span className="pro-badge px-2 py-0.5 rounded-full text-[10px] font-bold text-black">
@@ -263,9 +254,7 @@ export default function CheckinPage() {
                 >
                   {strain.type}
                 </span>
-                <span className="text-text-muted text-xs">
-                  THC {strain.thc}%
-                </span>
+                <span className="text-text-muted text-xs">THC {strain.thc}%</span>
               </div>
             </div>
             <span className="text-accent-green text-sm font-bold">

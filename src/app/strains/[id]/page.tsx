@@ -21,7 +21,6 @@ export default async function StrainPage({
 
   return (
     <div className="max-w-lg mx-auto px-4 pb-24">
-      {/* Back */}
       <Link
         href="/strains"
         className="inline-flex items-center gap-1 text-text-muted text-sm mt-4 mb-4 hover:text-text-secondary transition-colors"
@@ -43,13 +42,9 @@ export default async function StrainPage({
               >
                 {strain.type}
               </span>
-              <span className="text-text-muted text-sm">
-                THC {strain.thc}%
-              </span>
+              <span className="text-text-muted text-sm">THC {strain.thc}%</span>
               {strain.cbd > 0.1 && (
-                <span className="text-text-muted text-sm">
-                  CBD {strain.cbd}%
-                </span>
+                <span className="text-text-muted text-sm">CBD {strain.cbd}%</span>
               )}
             </div>
           </div>
@@ -58,9 +53,7 @@ export default async function StrainPage({
         {/* Rating */}
         <div className="flex items-center gap-3 bg-bg-primary/50 rounded-xl p-3 mb-4">
           <div className="text-center">
-            <p className="text-3xl font-black text-accent-green">
-              {strain.rating}
-            </p>
+            <p className="text-3xl font-black text-accent-green">{strain.rating}</p>
             <div className="flex gap-0.5 mt-0.5">
               {Array.from({ length: 5 }).map((_, i) => (
                 <span
@@ -77,20 +70,17 @@ export default async function StrainPage({
             </div>
           </div>
           <div className="flex-1">
-            <p className="text-text-secondary text-sm">
-              {strain.reviewCount} reviews
-            </p>
-            <p className="text-text-muted text-xs">from the PUFF community</p>
+            <p className="text-text-secondary text-sm">{strain.reviewCount} reviews</p>
+            <p className="text-text-muted text-xs">from the WIZL community</p>
           </div>
           <Link
             href="/checkin"
             className="px-4 py-2 rounded-xl bg-accent-green text-black font-bold text-sm hover:brightness-110 transition-all"
           >
-            Rate it 💨
+            Rate it 🔍
           </Link>
         </div>
 
-        {/* Description */}
         <p className="text-text-secondary text-sm leading-relaxed">
           {strain.description}
         </p>
@@ -126,7 +116,7 @@ export default async function StrainPage({
         </div>
       </div>
 
-      {/* Check-ins for this strain */}
+      {/* Reviews */}
       {strainCheckins.length > 0 && (
         <section>
           <h2 className="text-lg font-bold mb-4">💬 Recent Reviews</h2>
@@ -140,14 +130,11 @@ export default async function StrainPage({
 
       {strainCheckins.length === 0 && (
         <div className="text-center py-8">
-          <div className="text-4xl mb-2">💨</div>
+          <div className="text-4xl mb-2">🔍</div>
           <p className="text-text-secondary text-sm mb-1">
             No reviews yet. Be the first!
           </p>
-          <Link
-            href="/checkin"
-            className="text-accent-green text-sm font-semibold"
-          >
+          <Link href="/checkin" className="text-accent-green text-sm font-semibold">
             Write a review →
           </Link>
         </div>

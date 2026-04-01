@@ -13,7 +13,7 @@ export default function ProfilePage() {
         <p className="text-text-muted text-sm">@{user.username}</p>
         {user.isPro && (
           <span className="inline-block mt-2 pro-badge px-3 py-1 rounded-full text-xs font-bold text-black">
-            PRO MEMBER
+            WIZL PRO
           </span>
         )}
         <p className="text-text-secondary text-sm mt-3">{user.bio}</p>
@@ -25,15 +25,11 @@ export default function ProfilePage() {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 mb-6">
         <div className="glass-card rounded-2xl p-4 text-center">
-          <p className="text-3xl font-black text-accent-green">
-            {user.totalCheckins}
-          </p>
+          <p className="text-3xl font-black text-accent-green">{user.totalCheckins}</p>
           <p className="text-text-muted text-xs">Check-ins</p>
         </div>
         <div className="glass-card rounded-2xl p-4 text-center">
-          <p className="text-3xl font-black text-accent-purple">
-            {user.uniqueStrains}
-          </p>
+          <p className="text-3xl font-black text-accent-purple">{user.uniqueStrains}</p>
           <p className="text-text-muted text-xs">Unique Strains</p>
         </div>
       </div>
@@ -73,18 +69,12 @@ export default function ProfilePage() {
               >
                 <span className="text-2xl">{checkin.strain.image}</span>
                 <div className="flex-1">
-                  <p className="font-semibold text-sm">
-                    {checkin.strain.name}
-                  </p>
-                  <p className="text-text-muted text-xs line-clamp-1">
-                    {checkin.review}
-                  </p>
+                  <p className="font-semibold text-sm">{checkin.strain.name}</p>
+                  <p className="text-text-muted text-xs line-clamp-1">{checkin.review}</p>
                 </div>
                 <div className="flex gap-0.5">
                   {Array.from({ length: checkin.rating }).map((_, i) => (
-                    <span key={i} className="text-accent-green text-xs">
-                      🌿
-                    </span>
+                    <span key={i} className="text-accent-green text-xs">🌿</span>
                   ))}
                 </div>
               </Link>
@@ -92,19 +82,16 @@ export default function ProfilePage() {
           </div>
         ) : (
           <div className="text-center py-8">
-            <div className="text-3xl mb-2">💨</div>
+            <div className="text-3xl mb-2">🔍</div>
             <p className="text-text-secondary text-sm">No check-ins yet.</p>
-            <Link
-              href="/checkin"
-              className="text-accent-green text-sm font-semibold"
-            >
-              Make your first puff →
+            <Link href="/checkin" className="text-accent-green text-sm font-semibold">
+              Make your first scan →
             </Link>
           </div>
         )}
       </section>
 
-      {/* Settings links */}
+      {/* Settings */}
       <section>
         <h2 className="text-lg font-bold mb-3">⚙️ Settings</h2>
         <div className="flex flex-col gap-2">
@@ -113,7 +100,7 @@ export default function ProfilePage() {
             { icon: "🔔", label: "Notifications" },
             { icon: "🌍", label: "Language" },
             { icon: "🔒", label: "Privacy" },
-            { icon: "💳", label: "Manage Subscription" },
+            { icon: "💚", label: "Manage Subscription" },
             { icon: "📤", label: "Export Data" },
           ].map((item) => (
             <button

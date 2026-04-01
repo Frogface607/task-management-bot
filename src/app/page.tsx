@@ -9,26 +9,33 @@ export default function Home() {
   return (
     <div className="max-w-lg mx-auto px-4 pb-24">
       {/* Hero */}
-      <section className="py-8 text-center">
-        <div className="text-6xl mb-4 animate-float">💨</div>
-        <h1 className="text-3xl font-black gradient-text mb-2">PUFF</h1>
-        <p className="text-text-secondary text-sm max-w-xs mx-auto">
-          Track. Rate. Discover. Your cannabis journey, one puff at a time.
+      <section className="py-10 text-center">
+        <div className="text-5xl mb-4 animate-float">🔍</div>
+        <h1 className="text-3xl font-black gradient-text mb-1">WIZL</h1>
+        <p className="text-sm gradient-love font-medium mb-3">with love</p>
+        <p className="text-text-secondary text-sm max-w-xs mx-auto mb-6">
+          Discover what you got. Scan, track, and explore cannabis strains with AI.
         </p>
-        <Link
-          href="/checkin"
-          className="inline-flex items-center gap-2 mt-6 px-6 py-3 rounded-2xl bg-accent-green text-black font-bold hover:brightness-110 transition-all glow-green"
-        >
-          💨 Check In Now
-        </Link>
+        <div className="flex gap-3 justify-center">
+          <Link
+            href="/checkin"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-accent-green text-black font-bold hover:brightness-110 transition-all glow-green"
+          >
+            🔍 Scan Strain
+          </Link>
+          <Link
+            href="/strains"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-bg-card border border-border text-text-secondary font-medium hover:bg-bg-card-hover transition-all"
+          >
+            🌿 Browse
+          </Link>
+        </div>
       </section>
 
       {/* Quick Stats */}
       <section className="grid grid-cols-3 gap-3 mb-8">
         <div className="glass-card rounded-2xl p-3 text-center">
-          <p className="text-2xl font-black text-accent-green">
-            {strains.length}
-          </p>
+          <p className="text-2xl font-black text-accent-green">{strains.length}</p>
           <p className="text-text-muted text-xs">Strains</p>
         </div>
         <div className="glass-card rounded-2xl p-3 text-center">
@@ -37,7 +44,7 @@ export default function Home() {
         </div>
         <div className="glass-card rounded-2xl p-3 text-center">
           <p className="text-2xl font-black text-accent-orange">891</p>
-          <p className="text-text-muted text-xs">Users</p>
+          <p className="text-text-muted text-xs">Explorers</p>
         </div>
       </section>
 
@@ -52,8 +59,8 @@ export default function Home() {
           </div>
           <h3 className="font-bold text-lg mb-1">AI Strain Scanner</h3>
           <p className="text-text-secondary text-sm mb-3">
-            Сфоткай банку — получи карточку сорта с полным описанием, эффектами
-            и рейтингом от комьюнити. Magic.
+            Snap a photo of the jar — get a beautiful strain card with effects,
+            flavors, and community rating. Like magic.
           </p>
           <Link
             href="/checkin"
@@ -64,14 +71,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Trending Strains */}
+      {/* Trending */}
       <section className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold">🔥 Trending</h2>
-          <Link
-            href="/strains"
-            className="text-accent-green text-sm font-medium"
-          >
+          <Link href="/strains" className="text-accent-green text-sm font-medium">
             See all →
           </Link>
         </div>
@@ -92,26 +96,26 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Subscription CTA */}
+      {/* PRO CTA */}
       <section className="glass-card rounded-2xl p-6 mb-8 text-center border border-accent-green/20">
-        <h3 className="text-xl font-bold mb-2">Go PRO 🚀</h3>
+        <h3 className="text-xl font-bold mb-1">Unlock WIZL PRO</h3>
+        <p className="text-sm gradient-love font-medium mb-3">with love</p>
         <p className="text-text-secondary text-sm mb-4">
-          Unlimited check-ins, AI scanner, exclusive strains, no ads.
-          <br />
-          Support the community.
+          Unlimited scans, AI insights, full history, exclusive badges.
         </p>
         <div className="flex items-center justify-center gap-2 mb-4">
           <span className="text-text-muted line-through text-sm">$9.99</span>
-          <span className="text-2xl font-black text-accent-green">
-            $4.20
-          </span>
-          <span className="text-text-muted text-sm">/month</span>
+          <span className="text-3xl font-black price-420">$4.20</span>
+          <span className="text-text-muted text-sm">/mo</span>
         </div>
-        <button className="w-full py-3 rounded-2xl bg-accent-green text-black font-bold hover:brightness-110 transition-all glow-green">
+        <Link
+          href="/pro"
+          className="block w-full py-3 rounded-2xl bg-accent-green text-black font-bold hover:brightness-110 transition-all glow-green text-center"
+        >
           Start Free Trial
-        </button>
+        </Link>
         <p className="text-text-muted text-xs mt-2">
-          7 days free. Cancel anytime. Nice.
+          7 days free. Cancel anytime. You know the vibe.
         </p>
       </section>
     </div>

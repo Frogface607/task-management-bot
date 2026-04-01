@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 const navItems = [
   { href: "/", icon: "🏠", label: "Home" },
   { href: "/strains", icon: "🌿", label: "Strains" },
-  { href: "/checkin", icon: "💨", label: "Check-in" },
+  { href: "/checkin", icon: "🔍", label: "Scan" },
   { href: "/profile", icon: "👤", label: "Profile" },
 ];
 
@@ -22,6 +22,7 @@ export default function Navigation() {
               item.href === "/"
                 ? pathname === "/"
                 : pathname.startsWith(item.href);
+            const isScan = item.href === "/checkin";
 
             return (
               <Link
@@ -35,7 +36,7 @@ export default function Navigation() {
               >
                 <span
                   className={`text-xl ${
-                    item.href === "/checkin"
+                    isScan
                       ? "bg-accent-green text-black w-10 h-10 rounded-full flex items-center justify-center -mt-5 shadow-lg"
                       : ""
                   }`}
@@ -48,7 +49,6 @@ export default function Navigation() {
           })}
         </div>
       </div>
-      {/* Safe area spacer */}
       <div className="h-[env(safe-area-inset-bottom)]" />
     </nav>
   );

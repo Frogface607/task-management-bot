@@ -5,14 +5,14 @@ import Header from "@/components/Header";
 import Navigation from "@/components/Navigation";
 
 export const metadata: Metadata = {
-  title: "PUFF — Cannabis Check-in & Strain Guide",
+  title: "WIZL — Scan it. Know it. Track it.",
   description:
-    "Track, rate, and discover cannabis strains. AI-powered strain scanner, community reviews, and the chillest strain guide on the planet.",
-  keywords: ["cannabis", "strains", "weed", "check-in", "reviews", "THC"],
+    "Discover what you got. AI-powered cannabis strain scanner, check-ins, reviews, and the chillest strain guide on the planet. With love.",
+  keywords: ["cannabis", "strains", "scan", "check-in", "reviews", "AI", "WIZL"],
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0a0a",
+  themeColor: "#08080a",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,

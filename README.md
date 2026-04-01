@@ -1,15 +1,17 @@
-# PUFF — Cannabis Check-in & Strain Guide
+# WIZL — with love
 
-Track. Rate. Discover. Your cannabis journey, one puff at a time.
+Scan it. Know it. Track it.
+
+AI-powered cannabis strain scanner, check-ins, and the chillest strain guide on the planet.
 
 ## Features
 
-- Strain catalog with detailed info, effects, and flavors
-- Check-in system with ratings, moods, and reviews
-- AI Vision strain scanner (PRO)
-- Community reviews and social feed
-- User profiles with badges and stats
+- AI Strain Scanner — snap a photo, get full strain info
+- Strain catalog with effects, flavors, and ratings
+- Check-in system with moods, reviews, and badges
+- User profiles with stats and achievements
 - Age verification gate
+- PRO subscription ($4.20/mo)
 
 ## Tech Stack
 
@@ -25,3 +27,7 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+## Links
+
+- [wizl.space](https://wizl.space)

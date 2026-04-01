@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { strains, moods } from "@/data/strains";
 import { Strain } from "@/types";
+import { addCheckin, Achievement } from "@/lib/store";
 
 export default function CheckinPage() {
   const t = useTranslations("checkin");
@@ -14,10 +16,18 @@ export default function CheckinPage() {
   const [review, setReview] = useState("");
   const [selectedMood, setSelectedMood] = useState("");
   const [search, setSearch] = useState("");
+  const [newAchievements, setNewAchievements] = useState<Achievement[]>([]);
 
   const filteredStrains = strains.filter((s) =>
     s.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleSubmit = () => {
+    if (!selectedStrain || rating === 0) return;
+    const result = addCheckin(selectedStrain, rating, selectedMood, review);
+    setNewAchievements(result.newAchievements);
+    setStep("done");
+  };
 
   if (step === "done") {
     return (
@@ -36,6 +46,25 @@ export default function CheckinPage() {
             ))}
           </div>
 
+          {/* New achievements */}
+          {newAchievements.length > 0 && (
+            <div className="flex flex-col gap-3 mb-6">
+              {newAchievements.map((ach) => (
+                <div key={ach.id} className="glass-card rounded-2xl p-5 glow-green">
+                  <p className="text-accent-green font-bold text-sm mb-2">🏆 {t("badgeUnlocked")}</p>
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">{ach.icon}</span>
+                    <div className="text-left">
+                      <p className="font-semibold text-sm">{ach.name}</p>
+                      <p className="text-text-muted text-xs">{ach.description}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Share */}
           <div className="glass-card rounded-2xl p-5 mb-6 text-left">
             <p className="text-xs text-text-muted mb-2">{t("shareCheckin")}</p>
             <div className="flex gap-3">
@@ -47,23 +76,17 @@ export default function CheckinPage() {
             </div>
           </div>
 
-          <div className="glass-card rounded-2xl p-5 mb-6 glow-green">
-            <p className="text-accent-green font-bold text-sm mb-2">🏆 {t("badgeUnlocked")}</p>
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">🔍</span>
-              <div className="text-left">
-                <p className="font-semibold text-sm">{t("firstScan")}</p>
-                <p className="text-text-muted text-xs">{t("firstScanDesc")}</p>
-              </div>
-            </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => { setStep("select"); setSelectedStrain(null); setRating(0); setReview(""); setSelectedMood(""); setSearch(""); setNewAchievements([]); }}
+              className="flex-1 px-6 py-3 rounded-2xl bg-accent-green text-black font-bold hover:brightness-110 transition-all"
+            >
+              {t("scanAnother")} 🔍
+            </button>
+            <Link href="/profile" className="flex-1 px-6 py-3 rounded-2xl bg-bg-card border border-border text-text-secondary font-medium text-center hover:bg-bg-card-hover transition-all">
+              👤 Profile
+            </Link>
           </div>
-
-          <button
-            onClick={() => { setStep("select"); setSelectedStrain(null); setRating(0); setReview(""); setSelectedMood(""); setSearch(""); }}
-            className="px-6 py-3 rounded-2xl bg-accent-green text-black font-bold hover:brightness-110 transition-all"
-          >
-            {t("scanAnother")} 🔍
-          </button>
         </div>
       </div>
     );
@@ -126,14 +149,14 @@ export default function CheckinPage() {
             {t("addPhoto")} 📸{" "}
             <span className="pro-badge px-2 py-0.5 rounded-full text-[10px] font-bold text-black">{tc("pro")}</span>
           </h3>
-          <div className="glass-card rounded-2xl p-8 border-2 border-dashed border-border text-center">
+          <Link href="/scan" className="block glass-card rounded-2xl p-8 border-2 border-dashed border-border text-center hover:bg-bg-card-hover transition-all">
             <div className="text-3xl mb-2">📷</div>
             <p className="text-text-muted text-sm">{t("tapToScan")}</p>
             <p className="text-text-muted text-xs mt-1">{t("aiRecognize")}</p>
-          </div>
+          </Link>
         </div>
 
-        <button onClick={() => setStep("done")} disabled={rating === 0}
+        <button onClick={handleSubmit} disabled={rating === 0}
           className={`w-full py-4 rounded-2xl font-bold text-lg transition-all ${
             rating > 0 ? "bg-accent-green text-black hover:brightness-110 glow-green" : "bg-bg-card text-text-muted border border-border"
           }`}>
@@ -154,14 +177,14 @@ export default function CheckinPage() {
         <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted text-sm">🔍</span>
       </div>
 
-      <div className="glass-card rounded-2xl p-4 mb-6 flex items-center gap-3 glow-purple">
+      <Link href="/scan" className="glass-card rounded-2xl p-4 mb-6 flex items-center gap-3 glow-purple block">
         <div className="text-2xl">📸</div>
         <div className="flex-1">
           <p className="font-semibold text-sm">{t("scanWithAi")}</p>
           <p className="text-text-muted text-xs">{t("scanDesc")}</p>
         </div>
         <span className="pro-badge px-2 py-0.5 rounded-full text-[10px] font-bold text-black">{tc("pro")}</span>
-      </div>
+      </Link>
 
       <div className="flex flex-col gap-2">
         {filteredStrains.map((strain) => (

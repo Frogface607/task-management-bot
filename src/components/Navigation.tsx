@@ -11,6 +11,7 @@ export default function Navigation() {
     { href: "/" as const, icon: "🏠", label: t("home") },
     { href: "/strains" as const, icon: "🌿", label: t("strains") },
     { href: "/scan" as const, icon: "🔍", label: t("scan") },
+    { href: "/map" as const, icon: "📍", label: t("map") },
     { href: "/profile" as const, icon: "👤", label: t("profile") },
   ];
 

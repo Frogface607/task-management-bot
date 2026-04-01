@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { getUserData, incrementScans, getScansRemaining } from "@/lib/store";
 
 interface ScanResult {
   name: string;
@@ -39,8 +40,23 @@ export default function ScanPage() {
   const [description, setDescription] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [scansLeft, setScansLeft] = useState(5);
+  const [isPro, setIsPro] = useState(false);
+
+  useEffect(() => {
+    const data = getUserData();
+    setScansLeft(getScansRemaining(data));
+    setIsPro(data.isPro);
+  }, []);
 
   const handleScan = async (image?: string, text?: string) => {
+    // Check scan limit
+    const { allowed } = incrementScans();
+    if (!allowed) {
+      setError("Daily scan limit reached. Upgrade to PRO for unlimited scans.");
+      return;
+    }
+
     setMode("loading");
     setError(null);
 
@@ -64,6 +80,7 @@ export default function ScanPage() {
 
       setResult(data);
       setMode("result");
+      setScansLeft(getScansRemaining(getUserData()));
     } catch {
       setError("Connection error. Please try again.");
       setMode("idle");
@@ -307,15 +324,24 @@ export default function ScanPage() {
         </button>
       </div>
 
-      {/* PRO badge note */}
-      <div className="glass-card rounded-2xl p-4 text-center border border-accent-purple/20">
-        <p className="text-text-muted text-xs">
-          <span className="pro-badge px-2 py-0.5 rounded-full text-[10px] font-bold text-black mr-1">
-            {tc("pro")}
-          </span>
-          {" "}Unlimited scans with WIZL PRO
-        </p>
-      </div>
+      {/* Scan limit / PRO */}
+      {isPro ? (
+        <div className="glass-card rounded-2xl p-4 text-center border border-accent-green/20">
+          <p className="text-accent-green text-xs font-medium">
+            <span className="pro-badge px-2 py-0.5 rounded-full text-[10px] font-bold text-black mr-1">PRO</span>
+            {" "}Unlimited scans active
+          </p>
+        </div>
+      ) : (
+        <div className="glass-card rounded-2xl p-4 text-center border border-accent-purple/20">
+          <p className="text-text-secondary text-sm font-medium mb-1">
+            {scansLeft} free scan{scansLeft !== 1 ? "s" : ""} left today
+          </p>
+          <Link href="/pro" className="text-accent-green text-xs font-semibold">
+            Upgrade to PRO for unlimited →
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

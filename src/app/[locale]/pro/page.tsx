@@ -1,13 +1,61 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
+import { getUserData, saveUserData } from "@/lib/store";
 
 export default function ProPage() {
   const t = useTranslations("pro");
   const tb = useTranslations("brand");
+  const searchParams = useSearchParams();
+  const [loading, setLoading] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
+
+  // Check if returning from successful checkout
+  useEffect(() => {
+    if (searchParams.get("success") === "true") {
+      const data = getUserData();
+      data.isPro = true;
+      saveUserData(data);
+      setSubscribed(true);
+    } else {
+      const data = getUserData();
+      setSubscribed(data.isPro);
+    }
+  }, [searchParams]);
+
+  const handleSubscribe = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+
+      if (data.url && data.url !== "#demo-checkout") {
+        // Real checkout — redirect to LemonSqueezy
+        window.location.href = data.url;
+      } else {
+        // Demo mode — activate PRO locally
+        const userData = getUserData();
+        userData.isPro = true;
+        saveUserData(userData);
+        setSubscribed(true);
+      }
+    } catch {
+      // Fallback: activate demo PRO
+      const userData = getUserData();
+      userData.isPro = true;
+      saveUserData(userData);
+      setSubscribed(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const features = [
     { icon: "📸", title: t("aiScanner"), desc: t("aiScannerDesc") },
@@ -37,10 +85,16 @@ export default function ProPage() {
           <h2 className="text-2xl font-black gradient-text mb-1">{t("welcomePro")}</h2>
           <p className="text-sm gradient-love font-medium mb-4">{tb("tagline")}</p>
           <p className="text-text-secondary text-sm mb-8">{t("youreIn")}</p>
-          <Link href="/checkin"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-accent-green text-black font-bold hover:brightness-110 transition-all glow-green">
-            🔍 {t("startScanning")}
-          </Link>
+          <div className="flex gap-3 justify-center">
+            <Link href="/scan"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-accent-green text-black font-bold hover:brightness-110 transition-all glow-green">
+              🔍 {t("startScanning")}
+            </Link>
+            <Link href="/shop"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-bg-card border border-border text-text-secondary font-medium hover:bg-bg-card-hover transition-all">
+              🏪 Add Shop
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -74,6 +128,20 @@ export default function ProPage() {
         ))}
       </div>
 
+      {/* For shops */}
+      <div className="glass-card rounded-2xl p-5 mb-8 border border-accent-orange/20">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xl">🏪</span>
+          <h3 className="font-bold text-sm">Shop owners</h3>
+        </div>
+        <p className="text-text-secondary text-xs leading-relaxed mb-2">
+          PRO also lets you add your shop to the WIZL map with a full menu, hours, and reviews. Same price — $4.20/mo.
+        </p>
+        <Link href="/shop" className="text-accent-orange text-xs font-semibold">
+          Learn more →
+        </Link>
+      </div>
+
       <div className="glass-card rounded-2xl p-5 mb-8">
         <h3 className="font-bold mb-4">{t("freeVsPro")}</h3>
         <div className="flex flex-col gap-3">
@@ -102,9 +170,12 @@ export default function ProPage() {
         <p className="text-text-secondary text-xs leading-relaxed">{t("supportDesc")}</p>
       </div>
 
-      <button onClick={() => setSubscribed(true)}
-        className="w-full py-4 rounded-2xl bg-accent-green text-black font-bold text-lg hover:brightness-110 transition-all glow-green mb-3">
-        {t("startTrial")}
+      <button
+        onClick={handleSubscribe}
+        disabled={loading}
+        className="w-full py-4 rounded-2xl bg-accent-green text-black font-bold text-lg hover:brightness-110 transition-all glow-green mb-3 disabled:opacity-50"
+      >
+        {loading ? "Loading..." : t("startTrial")}
       </button>
       <p className="text-text-muted text-xs text-center mb-2">{t("trialNote")}</p>
       <p className="text-text-muted text-[10px] text-center">{t("noTricks")}</p>

@@ -10,7 +10,7 @@ export default function Navigation() {
   const navItems = [
     { href: "/" as const, icon: "🏠", label: t("home") },
     { href: "/strains" as const, icon: "🌿", label: t("strains") },
-    { href: "/checkin" as const, icon: "🔍", label: t("scan") },
+    { href: "/scan" as const, icon: "🔍", label: t("scan") },
     { href: "/profile" as const, icon: "👤", label: t("profile") },
   ];
 
@@ -20,7 +20,7 @@ export default function Navigation() {
         <div className="max-w-lg mx-auto flex items-center justify-around py-2 px-4">
           {navItems.map((item) => {
             const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-            const isScan = item.href === "/checkin";
+            const isScan = item.href === "/scan";
 
             return (
               <Link key={item.href} href={item.href}

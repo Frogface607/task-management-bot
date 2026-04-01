@@ -8,6 +8,12 @@ export function generateStaticParams() {
   return strains.map((s) => ({ id: s.id }));
 }
 
+const typeEmoji: Record<string, string> = {
+  sativa: "☀️",
+  indica: "🌙",
+  hybrid: "⚡",
+};
+
 export default async function StrainPage({
   params,
 }: {
@@ -29,66 +35,96 @@ export default async function StrainPage({
         ← {t("backToStrains")}
       </Link>
 
-      <div className="glass-card rounded-3xl p-6 mb-6">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="text-6xl w-20 h-20 flex items-center justify-center bg-bg-primary rounded-2xl">
-            {strain.image}
+      {/* Hero Card with type gradient bar */}
+      <div className="glass-card rounded-3xl overflow-hidden mb-6">
+        <div className={`h-1.5 strain-${strain.type}`} />
+
+        <div className="p-6">
+          {/* Header */}
+          <div className="flex items-start gap-4 mb-5">
+            <div className="text-6xl w-20 h-20 flex items-center justify-center bg-bg-primary rounded-2xl flex-shrink-0">
+              {strain.image}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl font-black leading-tight">{strain.name}</h1>
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                <span className={`strain-${strain.type} px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider text-white`}>
+                  {typeEmoji[strain.type]} {strain.type}
+                </span>
+                <span className="text-text-muted text-sm font-medium">THC {strain.thc}%</span>
+                {strain.cbd > 0.1 && (
+                  <span className="text-text-muted text-sm">CBD {strain.cbd}%</span>
+                )}
+              </div>
+            </div>
           </div>
-          <div className="flex-1">
-            <h1 className="text-2xl font-black">{strain.name}</h1>
-            <div className="flex items-center gap-2 mt-1">
-              <span className={`strain-${strain.type} px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider text-white`}>
-                {strain.type}
+
+          {/* Rating bar */}
+          <div className="flex items-center gap-3 bg-bg-primary/50 rounded-2xl p-4 mb-5">
+            <div className="text-center">
+              <p className="text-4xl font-black text-accent-green leading-none">{strain.rating}</p>
+              <div className="flex gap-0.5 mt-1.5 justify-center">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <span key={i} className={`text-sm ${i < Math.round(strain.rating) ? "text-accent-green" : "text-text-muted/30"}`}>★</span>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 border-l border-border pl-3">
+              <p className="text-text-primary text-sm font-semibold">{strain.reviewCount.toLocaleString()} {t("reviews")}</p>
+              <p className="text-text-muted text-xs">{t("fromCommunity")}</p>
+            </div>
+            <Link href="/checkin" className="px-4 py-2.5 rounded-xl bg-accent-green text-black font-bold text-sm hover:brightness-110 transition-all">
+              {t("rateIt")} 🔍
+            </Link>
+          </div>
+
+          {/* Description */}
+          <p className="text-text-secondary text-sm leading-relaxed">{strain.description}</p>
+        </div>
+      </div>
+
+      {/* Effects & Flavors side by side on small, stacked on narrow */}
+      <div className="grid grid-cols-1 gap-4 mb-6">
+        <div className="glass-card rounded-2xl p-5">
+          <h2 className="font-bold mb-3 text-sm uppercase tracking-wider text-text-muted">⚡ {t("effects")}</h2>
+          <div className="flex flex-wrap gap-2">
+            {strain.effects.map((effect) => (
+              <span key={effect} className="px-3 py-1.5 rounded-full bg-accent-green/10 text-accent-green text-sm font-medium border border-accent-green/20">
+                {effect}
               </span>
-              <span className="text-text-muted text-sm">THC {strain.thc}%</span>
-              {strain.cbd > 0.1 && <span className="text-text-muted text-sm">CBD {strain.cbd}%</span>}
-            </div>
+            ))}
           </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-bg-primary/50 rounded-xl p-3 mb-4">
-          <div className="text-center">
-            <p className="text-3xl font-black text-accent-green">{strain.rating}</p>
-            <div className="flex gap-0.5 mt-0.5">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <span key={i} className={`text-xs ${i < Math.round(strain.rating) ? "text-accent-green" : "text-text-muted"}`}>★</span>
-              ))}
-            </div>
+        <div className="glass-card rounded-2xl p-5">
+          <h2 className="font-bold mb-3 text-sm uppercase tracking-wider text-text-muted">👅 {t("flavors")}</h2>
+          <div className="flex flex-wrap gap-2">
+            {strain.flavors.map((flavor) => (
+              <span key={flavor} className="px-3 py-1.5 rounded-full bg-accent-purple/10 text-accent-purple text-sm font-medium border border-accent-purple/20">
+                {flavor}
+              </span>
+            ))}
           </div>
-          <div className="flex-1">
-            <p className="text-text-secondary text-sm">{strain.reviewCount} {t("reviews")}</p>
-            <p className="text-text-muted text-xs">{t("fromCommunity")}</p>
-          </div>
-          <Link href="/checkin" className="px-4 py-2 rounded-xl bg-accent-green text-black font-bold text-sm hover:brightness-110 transition-all">
-            {t("rateIt")} 🔍
-          </Link>
-        </div>
-
-        <p className="text-text-secondary text-sm leading-relaxed">{strain.description}</p>
-      </div>
-
-      <div className="glass-card rounded-2xl p-5 mb-4">
-        <h2 className="font-bold mb-3">⚡ {t("effects")}</h2>
-        <div className="flex flex-wrap gap-2">
-          {strain.effects.map((effect) => (
-            <span key={effect} className="px-3 py-1.5 rounded-full bg-accent-green/10 text-accent-green text-sm font-medium border border-accent-green/20">
-              {effect}
-            </span>
-          ))}
         </div>
       </div>
 
-      <div className="glass-card rounded-2xl p-5 mb-6">
-        <h2 className="font-bold mb-3">👅 {t("flavors")}</h2>
-        <div className="flex flex-wrap gap-2">
-          {strain.flavors.map((flavor) => (
-            <span key={flavor} className="px-3 py-1.5 rounded-full bg-accent-purple/10 text-accent-purple text-sm font-medium border border-accent-purple/20">
-              {flavor}
-            </span>
-          ))}
+      {/* Quick stats row */}
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="glass-card rounded-xl p-3 text-center">
+          <p className="text-lg font-black text-accent-green">{strain.thc}%</p>
+          <p className="text-text-muted text-[10px]">THC</p>
+        </div>
+        <div className="glass-card rounded-xl p-3 text-center">
+          <p className="text-lg font-black text-accent-purple">{strain.cbd}%</p>
+          <p className="text-text-muted text-[10px]">CBD</p>
+        </div>
+        <div className="glass-card rounded-xl p-3 text-center">
+          <p className="text-lg font-black text-accent-orange">{strain.reviewCount}</p>
+          <p className="text-text-muted text-[10px]">{t("reviews")}</p>
         </div>
       </div>
 
+      {/* Reviews */}
       {strainCheckins.length > 0 && (
         <section>
           <h2 className="text-lg font-bold mb-4">💬 {t("recentReviews")}</h2>

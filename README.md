@@ -1,89 +1,33 @@
-# Task Management Bot
+# WIZL — with love
 
-Простой бот для управления задачами в Telegram. Создан для бухгалтерии и офисной работы. Построен на Node.js, Telegraf, Supabase и node-cron.
+Scan it. Know it. Track it.
+
+AI-powered cannabis strain scanner, check-ins, and the chillest strain guide on the planet.
+
+## Features
+
+- AI Strain Scanner — snap a photo, get full strain info
+- Strain catalog with effects, flavors, and ratings
+- Check-in system with moods, reviews, and badges
+- User profiles with stats and achievements
+- Age verification gate
+- PRO subscription ($4.20/mo)
 
 ## Tech Stack
-- Node.js 18+
-- Telegraf 4.x
-- Supabase (PostgreSQL) via `@supabase/supabase-js`
-- node-cron
-- Pino logger
 
-## Project Structure
+- Next.js 16 (App Router)
+- TypeScript
+- Tailwind CSS 4
 
-```
-task-management-bot/
-├── src/
-│   ├── bot/
-│   │   ├── index.js
-│   │   ├── commands/
-│   │   ├── handlers/
-│   │   └── keyboards/
-│   ├── database/
-│   │   ├── supabase.js
-│   │   └── queries/
-│   ├── services/
-│   └── config/
-│       └── constants.js
-├── migrations.sql
-├── .env.example
-├── package.json
-└── README.md
+## Getting Started
+
+```bash
+npm install
+npm run dev
 ```
 
-## Environment Variables
-Скопируйте `.env.example` в `.env` и заполните значения:
+Open [http://localhost:3000](http://localhost:3000).
 
-```
-TELEGRAM_BOT_TOKEN=
-SUPABASE_URL=
-SUPABASE_ANON_KEY=
-ADMIN_TELEGRAM_ID=
-TIMEZONE=Asia/Irkutsk
-```
+## Links
 
-## Setup
-1. Установите зависимости:
-   ```bash
-   npm install
-   ```
-2. Создайте `.env` из `.env.example` и заполните значения.
-3. Создайте схему базы данных (выполните в SQL редакторе Supabase):
-   ```sql
-   -- Скопируйте содержимое migrations.sql и выполните
-   ```
-4. Запустите бота:
-   ```bash
-   npm run dev
-   ```
-
-## Основные функции
-- Создание и назначение задач подчиненным
-- Установка дедлайнов
-- Уведомления о дедлайнах
-- Отслеживание статуса задач
-- Управление рабочими пространствами
-
-## 🚀 Деплой на Railway
-
-Подробные инструкции по деплою на Railway смотрите в [DEPLOY.md](./DEPLOY.md)
-
-### Быстрый старт:
-
-1. Создайте репозиторий на GitHub и загрузите код
-2. Зайдите на [railway.app](https://railway.app) и создайте новый проект
-3. Подключите GitHub репозиторий
-4. Добавьте PostgreSQL базу данных
-5. Настройте переменные окружения (см. DEPLOY.md)
-6. Выполните `migrations.sql` в базе данных
-7. Готово! Бот автоматически задеплоится
-
-## 📝 Переменные окружения
-
-```
-TELEGRAM_BOT_TOKEN=ваш_токен_бота
-SUPABASE_URL=https://ваш-проект.supabase.co
-SUPABASE_ANON_KEY=ваш_ключ
-ADMIN_TELEGRAM_ID=ваш_telegram_username
-TIMEZONE=Asia/Irkutsk
-```
+- [wizl.space](https://wizl.space)

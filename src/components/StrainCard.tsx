@@ -1,89 +1,129 @@
 import { Link } from "@/i18n/navigation";
 import { Strain } from "@/types";
-import { IconStar, IconDna, StrainTypeIcon } from "./icons";
+import { IconStar, IconDna } from "./icons";
+
+// Generate a unique abstract gradient based on strain color
+function strainGradient(color: string, type: string): string {
+  const typeAccents: Record<string, string> = {
+    sativa: "#facc15",
+    indica: "#a78bfa",
+    hybrid: "#34d399",
+  };
+  const accent = typeAccents[type] || "#34d399";
+  return `radial-gradient(ellipse at 20% 80%, ${color}60 0%, transparent 50%),
+          radial-gradient(ellipse at 80% 20%, ${accent}40 0%, transparent 50%),
+          radial-gradient(ellipse at 50% 50%, ${color}30 0%, transparent 70%),
+          linear-gradient(135deg, ${color}15 0%, #131316 100%)`;
+}
+
+function strainGlow(color: string): string {
+  return `0 0 20px ${color}25, 0 0 40px ${color}10, inset 0 1px 0 ${color}20`;
+}
+
+// Terpene icons
+const terpeneIcons: Record<string, string> = {
+  Myrcene: "🫐",
+  Limonene: "🍋",
+  Caryophyllene: "🌶️",
+  Pinene: "🌲",
+  Linalool: "💐",
+  Humulene: "🍺",
+  Terpinolene: "🌿",
+  Ocimene: "🌸",
+};
 
 export default function StrainCard({ strain }: { strain: Strain }) {
-  const topTerpene = strain.terpenes[0];
-
   return (
     <Link href={`/strains/${strain.id}`}>
-      <div className="glass-card rounded-2xl overflow-hidden hover:bg-bg-card-hover transition-all cursor-pointer group">
-        {/* Accent bar with strain color */}
-        <div className="h-1" style={{ background: strain.color }} />
-
-        <div className="p-4">
-          <div className="flex gap-3.5">
-            {/* Strain color dot + type */}
-            <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform"
-                style={{ backgroundColor: `${strain.color}20`, border: `1px solid ${strain.color}30` }}
-              >
-                <StrainTypeIcon type={strain.type} size="md" />
-              </div>
-              <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">
-                {strain.thc}%
-              </span>
-            </div>
-
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <h3 className="font-bold text-text-primary text-[15px] leading-tight truncate">
-                    {strain.name}
-                  </h3>
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <span className={`strain-${strain.type} px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider text-white`}>
-                      {strain.type}
-                    </span>
-                    {strain.genetics.parents.length > 0 && (
-                      <span className="text-text-muted text-[10px] flex items-center gap-0.5 truncate">
-                        <IconDna className="w-3 h-3 flex-shrink-0" />
-                        {strain.genetics.parents.slice(0, 2).join(" × ")}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Rating */}
-                <div className="flex items-center gap-1 bg-bg-primary px-2 py-1 rounded-lg flex-shrink-0">
-                  <IconStar className="w-3.5 h-3.5 text-accent-green" filled />
-                  <span className="text-accent-green font-black text-sm">
-                    {strain.rating.toFixed(1)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Terpene + flavor tags */}
-              <div className="flex flex-wrap items-center gap-1 mt-2">
-                {topTerpene && (
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent-purple/10 text-accent-purple border border-accent-purple/20 font-medium">
-                    {topTerpene}
+      <div
+        className="rounded-2xl overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02]"
+        style={{
+          background: strainGradient(strain.color, strain.type),
+          boxShadow: strainGlow(strain.color),
+          border: `1px solid ${strain.color}30`,
+        }}
+      >
+        <div className="p-4 backdrop-blur-sm">
+          {/* Top: Name + Rating */}
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <h3 className="font-black text-lg text-white leading-tight tracking-tight uppercase">
+                {strain.name}
+              </h3>
+              <div className="flex items-center gap-2 mt-1">
+                <span
+                  className={`strain-${strain.type} px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider text-white`}
+                >
+                  {strain.type}
+                </span>
+                {strain.genetics.parents.length > 0 && (
+                  <span className="text-white/60 text-[10px] flex items-center gap-0.5">
+                    <IconDna className="w-3 h-3" />
+                    {strain.genetics.parents.slice(0, 2).join(" x ")}
                   </span>
                 )}
-                {strain.flavors.slice(0, 2).map((flavor) => (
-                  <span
-                    key={flavor}
-                    className="text-[9px] px-1.5 py-0.5 rounded bg-bg-primary/80 text-text-muted border border-border/50"
-                  >
-                    {flavor}
-                  </span>
+              </div>
+            </div>
+            <div className="flex flex-col items-end">
+              <div className="flex items-center gap-0.5">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <IconStar
+                    key={star}
+                    className={`w-3.5 h-3.5 ${
+                      star <= Math.round(strain.rating) ? "text-yellow-400" : "text-white/20"
+                    }`}
+                    filled={star <= Math.round(strain.rating)}
+                  />
                 ))}
               </div>
+              <span className="text-white/60 text-[10px] mt-0.5">
+                {strain.rating.toFixed(1)} ({strain.reviewCount.toLocaleString()})
+              </span>
+            </div>
+          </div>
 
-              {/* Bottom row */}
-              <div className="flex items-center justify-between mt-2">
-                <span className="text-text-muted text-[10px]">
-                  {strain.reviewCount.toLocaleString()} reviews
-                </span>
-                <div className="flex items-center gap-1">
-                  {strain.effects.slice(0, 2).map((e) => (
-                    <span key={e} className="text-[9px] text-text-muted font-medium">
-                      {e}
-                    </span>
-                  ))}
-                </div>
+          {/* Terpene badges */}
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {strain.terpenes.slice(0, 3).map((terp) => (
+              <span
+                key={terp}
+                className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium text-white/90 backdrop-blur-md"
+                style={{ backgroundColor: `${strain.color}35`, border: `1px solid ${strain.color}40` }}
+              >
+                <span className="text-xs">{terpeneIcons[terp] || "🧪"}</span>
+                {terp}
+              </span>
+            ))}
+          </div>
+
+          {/* THC / CBD bars */}
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-white/50 text-[9px] font-medium">THC</span>
+                <span className="text-white/80 text-[10px] font-bold">{strain.thc}%</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all"
+                  style={{
+                    width: `${(strain.thc / 35) * 100}%`,
+                    background: `linear-gradient(90deg, ${strain.color}, ${strain.color}cc)`,
+                  }}
+                />
+              </div>
+            </div>
+            <div className="w-px h-6 bg-white/10" />
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-white/50 text-[9px] font-medium">CBD</span>
+                <span className="text-white/80 text-[10px] font-bold">{strain.cbd}%</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-accent-purple/60"
+                  style={{ width: `${Math.min((strain.cbd / 5) * 100, 100)}%` }}
+                />
               </div>
             </div>
           </div>

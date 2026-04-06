@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { getUserData, incrementScans, getScansRemaining } from "@/lib/store";
+import { IconCamera } from "@/components/icons";
 
 interface ScanResult {
   name: string;
@@ -262,8 +263,7 @@ export default function ScanPage() {
   // Idle state — scan input
   return (
     <div className="max-w-lg mx-auto px-4 pb-24 pt-6">
-      <div className="text-center mb-8">
-        <div className="text-5xl mb-3 animate-float">🔍</div>
+      <div className="text-center mb-6">
         <h1 className="text-2xl font-black gradient-text mb-1">{t("title")}</h1>
         <p className="text-text-secondary text-sm">{t("subtitle")}</p>
       </div>
@@ -274,8 +274,44 @@ export default function ScanPage() {
         </div>
       )}
 
-      {/* Photo upload area */}
-      <div className="mb-6">
+      {/* PRIMARY: Enter strain name */}
+      <div className="mb-5">
+        <label className="text-sm font-semibold mb-2 block text-text-primary">Enter strain name</label>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            placeholder="e.g. Oreo Zushi, Blue Dream, OG Kush..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleTextScan()}
+            className="flex-1 bg-bg-card border border-border rounded-2xl px-4 py-3.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-green/50 transition-colors"
+          />
+          <button
+            onClick={handleTextScan}
+            disabled={!description.trim()}
+            className={`px-5 rounded-2xl font-bold transition-all flex-shrink-0 ${
+              description.trim()
+                ? "bg-accent-green text-black hover:brightness-110 glow-green"
+                : "bg-bg-card text-text-muted border border-border"
+            }`}
+          >
+            Scan
+          </button>
+        </div>
+        <p className="text-text-muted text-[10px] mt-1.5 ml-1">
+          Type any strain name — WIZL AI will tell you everything about it
+        </p>
+      </div>
+
+      {/* Divider */}
+      <div className="flex items-center gap-4 mb-5">
+        <div className="flex-1 h-px bg-border" />
+        <span className="text-text-muted text-xs">or</span>
+        <div className="flex-1 h-px bg-border" />
+      </div>
+
+      {/* Photo scan */}
+      <div className="mb-5">
         <input
           ref={fileRef}
           type="file"
@@ -284,44 +320,33 @@ export default function ScanPage() {
           onChange={handleFileChange}
           className="hidden"
         />
-
         <button
           onClick={() => fileRef.current?.click()}
-          className="w-full glass-card rounded-2xl p-8 border-2 border-dashed border-accent-green/30 text-center hover:bg-bg-card-hover hover:border-accent-green/50 transition-all group"
+          className="w-full glass-card rounded-2xl p-6 border border-border text-center hover:bg-bg-card-hover hover:border-accent-green/30 transition-all group flex items-center gap-4"
         >
-          <div className="text-5xl mb-3 group-hover:scale-110 transition-transform">📸</div>
-          <p className="text-text-primary font-bold mb-1">{t("takePhoto")}</p>
-          <p className="text-text-muted text-xs">{t("uploadPhoto")}</p>
+          <div className="w-14 h-14 rounded-xl bg-accent-purple/10 border border-accent-purple/20 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+            <IconCamera className="w-6 h-6 text-accent-purple" />
+          </div>
+          <div className="text-left">
+            <p className="text-text-primary font-semibold text-sm">{t("takePhoto")}</p>
+            <p className="text-text-muted text-xs">Snap the jar or package — AI identifies the strain</p>
+          </div>
+          <span className="pro-badge px-2 py-0.5 rounded-full text-[9px] font-bold text-black flex-shrink-0">PRO</span>
         </button>
       </div>
 
-      {/* Divider */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="flex-1 h-px bg-border" />
-        <span className="text-text-muted text-xs">{t("orDescribe")}</span>
-        <div className="flex-1 h-px bg-border" />
-      </div>
-
-      {/* Text description */}
+      {/* Or describe freely */}
       <div className="mb-6">
+        <label className="text-xs font-medium mb-2 block text-text-muted">
+          Or describe what you see / smell / feel
+        </label>
         <textarea
-          placeholder={t("describePlaceholder")}
+          placeholder="green dense buds, smells like citrus and pine, came in a purple jar..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          rows={3}
+          rows={2}
           className="w-full bg-bg-card border border-border rounded-2xl px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-green/50 transition-colors resize-none"
         />
-        <button
-          onClick={handleTextScan}
-          disabled={!description.trim()}
-          className={`w-full mt-3 py-3 rounded-2xl font-bold transition-all ${
-            description.trim()
-              ? "bg-accent-green text-black hover:brightness-110 glow-green"
-              : "bg-bg-card text-text-muted border border-border"
-          }`}
-        >
-          🔍 {t("title")}
-        </button>
       </div>
 
       {/* Scan limit / PRO */}

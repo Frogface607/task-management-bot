@@ -1,6 +1,7 @@
 import { Link } from "@/i18n/navigation";
 import { CheckIn } from "@/types";
 import { moods } from "@/data/strains";
+import { StrainTypeIcon } from "./icons";
 
 function timeAgo(dateStr: string): string {
   const now = new Date("2026-04-01T16:00:00Z");
@@ -35,7 +36,7 @@ export default function CheckinCard({ checkin }: { checkin: CheckIn }) {
       </div>
       <Link href={`/strains/${checkin.strainId}`}
         className="flex items-center gap-3 bg-bg-primary/50 rounded-xl p-3 mb-3 hover:bg-bg-primary transition-colors">
-        <span className="text-2xl">{checkin.strain.image}</span>
+        <StrainTypeIcon type={checkin.strain.type} size="md" />
         <div className="flex-1">
           <p className="font-semibold text-sm">{checkin.strain.name}</p>
           <span className={`strain-${checkin.strain.type} px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-white`}>

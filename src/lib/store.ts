@@ -225,7 +225,7 @@ export function addCheckin(
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     strainId: strain.id,
     strainName: strain.name,
-    strainImage: strain.image,
+    strainImage: strain.color,
     strainType: strain.type,
     rating,
     mood,

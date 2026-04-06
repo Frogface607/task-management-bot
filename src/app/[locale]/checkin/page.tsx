@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { strains, moods } from "@/data/strains";
 import { Strain } from "@/types";
 import { addCheckin, Achievement } from "@/lib/store";
+import { StrainTypeIcon } from "@/components/icons";
 
 export default function CheckinPage() {
   const t = useTranslations("checkin");
@@ -101,7 +102,7 @@ export default function CheckinPage() {
 
         <div className="glass-card rounded-2xl p-4 mb-6">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">{selectedStrain.image}</span>
+            <StrainTypeIcon type={selectedStrain.type} size="md" />
             <div>
               <h3 className="font-bold">{selectedStrain.name}</h3>
               <span className={`strain-${selectedStrain.type} px-2 py-0.5 rounded-full text-[10px] font-bold uppercase text-white`}>
@@ -190,7 +191,7 @@ export default function CheckinPage() {
         {filteredStrains.map((strain) => (
           <button key={strain.id} onClick={() => { setSelectedStrain(strain); setStep("rate"); }}
             className="glass-card rounded-2xl p-3 flex items-center gap-3 text-left hover:bg-bg-card-hover transition-all">
-            <span className="text-2xl w-10 h-10 flex items-center justify-center bg-bg-primary rounded-xl">{strain.image}</span>
+            <div className="w-10 h-10 flex items-center justify-center bg-bg-primary rounded-xl"><StrainTypeIcon type={strain.type} size="md" /></div>
             <div className="flex-1">
               <p className="font-semibold text-sm">{strain.name}</p>
               <div className="flex items-center gap-2">

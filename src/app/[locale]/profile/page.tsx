@@ -134,7 +134,7 @@ export default function ProfilePage() {
             {topStrains.map((s, i) => (
               <div key={s.name} className="glass-card rounded-xl p-3 flex items-center gap-3">
                 <span className="text-text-muted text-xs font-bold w-5">#{i + 1}</span>
-                <span className="text-xl">{s.image}</span>
+                <div className="w-6 h-6 rounded-full" style={{ backgroundColor: s.image }} />
                 <span className="flex-1 font-semibold text-sm">{s.name}</span>
                 <span className="text-accent-green text-xs font-bold">{s.count}x</span>
               </div>
@@ -150,7 +150,7 @@ export default function ProfilePage() {
           <div className="flex flex-col gap-2">
             {data.checkins.slice(0, 10).map((checkin) => (
               <div key={checkin.id} className="glass-card rounded-xl p-3 flex items-center gap-3">
-                <span className="text-xl">{checkin.strainImage}</span>
+                <div className="w-8 h-8 rounded-lg flex-shrink-0" style={{ backgroundColor: `${checkin.strainImage}30`, border: `1px solid ${checkin.strainImage}50` }} />
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm">{checkin.strainName}</p>
                   {checkin.review && (

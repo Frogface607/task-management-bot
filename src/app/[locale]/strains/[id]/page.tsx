@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { strains, recentCheckins } from "@/data/strains";
 import { shops } from "@/data/shops";
+import { StrainTypeIcon } from "@/components/icons";
 import CheckinCard from "@/components/CheckinCard";
 import { notFound } from "next/navigation";
 
@@ -46,8 +47,9 @@ export default async function StrainPage({
         <div className="p-6">
           {/* Header */}
           <div className="flex items-start gap-4 mb-5">
-            <div className="text-6xl w-20 h-20 flex items-center justify-center bg-bg-primary rounded-2xl flex-shrink-0">
-              {strain.image}
+            <div className="w-20 h-20 flex items-center justify-center rounded-2xl flex-shrink-0"
+                 style={{ backgroundColor: `${strain.color}20`, border: `2px solid ${strain.color}40` }}>
+              <StrainTypeIcon type={strain.type} size="lg" />
             </div>
             <div className="flex-1 min-w-0">
               <h1 className="text-2xl font-black leading-tight">{strain.name}</h1>
@@ -87,7 +89,46 @@ export default async function StrainPage({
         </div>
       </div>
 
-      {/* Effects & Flavors side by side on small, stacked on narrow */}
+      {/* Genetics */}
+      <div className="glass-card rounded-2xl p-5 mb-4">
+        <h2 className="font-bold mb-3 text-sm uppercase tracking-wider text-text-muted">🧬 Genetics</h2>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-text-muted text-xs">Lineage</span>
+            <span className="text-text-primary text-sm font-medium">{strain.genetics.lineage}</span>
+          </div>
+          {strain.genetics.breeder && (
+            <div className="flex items-center justify-between">
+              <span className="text-text-muted text-xs">Breeder</span>
+              <span className="text-text-secondary text-sm">{strain.genetics.breeder}</span>
+            </div>
+          )}
+          <div className="flex items-center justify-between">
+            <span className="text-text-muted text-xs">Parents</span>
+            <div className="flex gap-1.5">
+              {strain.genetics.parents.map((p) => (
+                <span key={p} className="text-xs px-2 py-0.5 rounded bg-bg-primary text-text-secondary border border-border">
+                  {p}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Terpenes */}
+      <div className="glass-card rounded-2xl p-5 mb-4">
+        <h2 className="font-bold mb-3 text-sm uppercase tracking-wider text-text-muted">🧪 Terpenes</h2>
+        <div className="flex flex-wrap gap-2">
+          {strain.terpenes.map((t) => (
+            <span key={t} className="px-3 py-1.5 rounded-full bg-accent-orange/10 text-accent-orange text-sm font-medium border border-accent-orange/20">
+              {t}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Effects & Flavors */}
       <div className="grid grid-cols-1 gap-4 mb-6">
         <div className="glass-card rounded-2xl p-5">
           <h2 className="font-bold mb-3 text-sm uppercase tracking-wider text-text-muted">⚡ {t("effects")}</h2>

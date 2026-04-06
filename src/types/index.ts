@@ -9,9 +9,15 @@ export interface Strain {
   description: string;
   effects: string[];
   flavors: string[];
+  terpenes: string[];
+  genetics: {
+    lineage: string;
+    breeder?: string;
+    parents: string[];
+  };
   rating: number;
   reviewCount: number;
-  image: string;
+  color: string; // hex color for the strain card accent
 }
 
 export interface CheckIn {
